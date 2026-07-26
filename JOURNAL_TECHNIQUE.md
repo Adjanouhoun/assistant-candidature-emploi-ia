@@ -39,4 +39,56 @@ Validé le 27 juillet 2026.
 - [x] Définir les règles minimales de sécurité.
 - [x] Proposer la feuille de route.
 - [x] Faire valider le Sprint 0 par le porteur du projet.
-- [ ] Créer et pousser le dépôt GitHub après validation explicite.
+- [x] Créer et pousser le dépôt GitHub après validation explicite.
+
+## Sprint 1 — Socle local et profil candidat
+
+### État
+
+Validé le 27 juillet 2026.
+
+### Décisions enregistrées
+
+1. Accepter les PDF textuels et les DOCX.
+2. Refuser explicitement les CV scannés ; reporter l’OCR.
+3. Extraire localement et de manière déterministe, sans Gemini.
+4. Rendre toutes les informations extraites vérifiables et modifiables.
+5. Exclure les données sensibles et les coordonnées du futur scoring.
+6. Ne conserver le CV et le profil que pendant la session Streamlit.
+7. Informer l’utilisateur avant le chargement et rappeler cette politique après.
+8. Fournir une action explicite pour effacer le CV et le profil.
+9. Utiliser Python, Streamlit, Pydantic, une bibliothèque PDF locale,
+   `python-docx` et Pytest.
+10. Utiliser uniquement des documents synthétiques dans les tests.
+
+### Actions
+
+- [x] Valider les formats de CV.
+- [x] Valider la méthode d’extraction.
+- [x] Valider le schéma fonctionnel du profil.
+- [x] Valider la politique de conservation.
+- [x] Valider le socle technique.
+- [x] Implémenter le socle local.
+- [x] Démontrer le parcours avec un DOCX synthétique.
+- [x] Exécuter les tests : 10 tests réussis.
+- [x] Faire valider la clôture du Sprint 1.
+
+### Résultats de vérification
+
+- Python 3.12.13 ;
+- Streamlit 1.60.0 ;
+- chargement DOCX synthétique vérifié dans l’interface ;
+- extraction du nom, de l’email, du téléphone et des compétences vérifiée ;
+- information de conservation visible avant et après chargement ;
+- limite d’envoi affichée et appliquée à 5 Mo ;
+- PDF sans texte refusé avec indication de l’absence d’OCR ;
+- 10 tests automatisés réussis ;
+- compilation Python réussie ;
+- aucun CV réel, secret, appel Gemini ou appel API ajouté.
+
+### Corrections après revue
+
+- gestion explicite des fichiers DOCX corrompus ;
+- empreinte SHA-256 du contenu pour distinguer deux fichiers ayant le même nom
+  et la même taille ;
+- tests de non-régression ajoutés pour ces deux cas.
