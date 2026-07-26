@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
+from zipfile import BadZipFile
 
 from docx import Document
 from pypdf import PdfReader
@@ -67,7 +68,7 @@ def _extract_pdf(content: bytes) -> ExtractedDocument:
 def _extract_docx(content: bytes) -> ExtractedDocument:
     try:
         document = Document(BytesIO(content))
-    except (OSError, ValueError) as exc:
+    except (BadZipFile, OSError, ValueError) as exc:
         raise DocumentExtractionError(
             "Le document DOCX est illisible ou endommagé."
         ) from exc

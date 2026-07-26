@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+from hashlib import sha256
 from pathlib import Path
 
 import streamlit as st
@@ -52,6 +53,12 @@ def csv_to_list(value: str) -> list[str]:
 
 def list_to_csv(values: list[str]) -> str:
     return ", ".join(values)
+
+
+def upload_fingerprint(filename: str, content: bytes, revision: int) -> tuple[str, str, int]:
+    """Identifie le contenu chargé sans conserver ni journaliser le CV."""
+
+    return filename, sha256(content).hexdigest(), revision
 
 
 def rows_to_experiences(rows: list[dict[str, object]]) -> list[Experience]:
@@ -223,14 +230,15 @@ def main() -> None:
     )
 
     if uploaded_file is not None:
-        upload_signature = (
+        uploaded_content = uploaded_file.getvalue()
+        upload_signature = upload_fingerprint(
             uploaded_file.name,
-            uploaded_file.size,
+            uploaded_content,
             st.session_state.upload_revision,
         )
         if st.session_state.processed_upload != upload_signature:
             try:
-                extracted = extract_document(uploaded_file.name, uploaded_file.getvalue())
+                extracted = extract_document(uploaded_file.name, uploaded_content)
                 st.session_state.profile = build_candidate_profile(extracted)
             except DocumentExtractionError as exc:
                 st.session_state.profile = None

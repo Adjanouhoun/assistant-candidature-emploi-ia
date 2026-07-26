@@ -55,6 +55,11 @@ def test_extracts_docx() -> None:
     assert "Python, SQL, Airflow" in result.text
 
 
+def test_rejects_corrupted_docx_with_a_user_facing_error() -> None:
+    with pytest.raises(DocumentExtractionError, match="illisible ou endommagé"):
+        extract_document("cv.docx", b"not-a-docx-file" * 10)
+
+
 def test_rejects_scanned_or_blank_pdf() -> None:
     with pytest.raises(DocumentExtractionError, match="OCR"):
         extract_document("scan.pdf", make_blank_pdf())

@@ -85,3 +85,10 @@ Validé le 27 juillet 2026.
 - 10 tests automatisés réussis ;
 - compilation Python réussie ;
 - aucun CV réel, secret, appel Gemini ou appel API ajouté.
+
+### Corrections après revue
+
+- gestion explicite des fichiers DOCX corrompus ;
+- empreinte SHA-256 du contenu pour distinguer deux fichiers ayant le même nom
+  et la même taille ;
+- tests de non-régression ajoutés pour ces deux cas.
