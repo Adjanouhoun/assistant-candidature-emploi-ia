@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import os
 from pathlib import Path
 
 import streamlit as st
@@ -22,6 +23,8 @@ from candidature_emploi.domain.models import CandidateProfile
 from candidature_emploi.domain.offers import Commune, JobOffer, SearchCriteria
 from candidature_emploi.infrastructure.france_travail.errors import ProviderError
 from candidature_emploi.infrastructure.france_travail.offers import find_communes
+from candidature_emploi.infrastructure.database import create_database_engine
+from candidature_emploi.infrastructure.offer_repository import OfferRepository
 
 PAGE_SIZE = 20
 
@@ -43,6 +46,17 @@ def services() -> JobSearchServices:
     if current is None:
         current = create_job_search_services(PROJECT_ROOT / ".env")
         st.session_state.job_services = current
+    return current
+
+
+def repository() -> OfferRepository | None:
+    url = os.getenv("DATABASE_URL", "").strip()
+    if not url:
+        return None
+    current = st.session_state.get("offer_repository")
+    if current is None:
+        current = OfferRepository(create_database_engine(url))
+        st.session_state.offer_repository = current
     return current
 
 
@@ -77,7 +91,8 @@ def perform_search(form: dict[str, object], commune: Commune | None, page: int =
             page=page,
             page_size=PAGE_SIZE,
         )
-        result = services().offers.search(criteria)
+        stored = repository()
+        result = stored.search(criteria) if stored else services().offers.search(criteria)
     except (ValidationError, ProviderError) as exc:
         if isinstance(exc, ProviderError):
             st.error(exc.user_message)
@@ -92,7 +107,8 @@ def perform_search(form: dict[str, object], commune: Commune | None, page: int =
 
 def perform_criteria(criteria: SearchCriteria) -> bool:
     try:
-        st.session_state.search_result = services().offers.search(criteria)
+        stored = repository()
+        st.session_state.search_result = stored.search(criteria) if stored else services().offers.search(criteria)
     except ProviderError as exc:
         st.error(exc.user_message)
         return False
@@ -101,6 +117,9 @@ def perform_criteria(criteria: SearchCriteria) -> bool:
 
 
 def resolve_and_search(form: dict[str, object]) -> None:
+    if repository() is not None:
+        perform_search(form, None)
+        return
     location_query = str(form["location"]).strip()
     if not location_query:
         perform_search(form, None)
@@ -121,11 +140,14 @@ def resolve_and_search(form: dict[str, object]) -> None:
 
 def render_search_form() -> None:
     role_default, location_default = profile_defaults()
-    try:
-        contracts = load_contract_types()
-    except ProviderError as exc:
-        st.error(exc.user_message)
+    if repository() is not None:
         contracts = []
+    else:
+        try:
+            contracts = load_contract_types()
+        except ProviderError as exc:
+            st.error(exc.user_message)
+            contracts = []
 
     contract_options = {"Tous": ""}
     contract_options.update({label: code for code, label in contracts})
@@ -207,6 +229,17 @@ def render_offer(offer: JobOffer) -> None:
 
 
 def load_offer_detail(external_id: str) -> None:
+    stored = repository()
+    if stored is not None:
+        result = st.session_state.search_result
+        if result is not None:
+            detail = next(
+                (offer for offer in result.offers if offer.external_id == external_id),
+                None,
+            )
+            if detail is not None:
+                st.session_state.offer_details[external_id] = detail
+        return
     try:
         detail = services().offers.get_detail(external_id)
         st.session_state.offer_details[external_id] = detail
@@ -279,6 +312,13 @@ def main() -> None:
     st.set_page_config(page_title="Rechercher des offres", page_icon="🔎", layout="wide")
     initialize_state()
     st.title("Rechercher des offres")
+    stored = repository()
+    if stored:
+        freshness = stored.last_successful_sync("france_travail")
+        st.caption(
+            "Source de consultation : PostgreSQL. "
+            + (f"Dernière synchronisation : {freshness.isoformat()}" if freshness else "Aucune synchronisation terminée.")
+        )
     st.caption(
         "Source : France Travail. Enrichissement ROME à la demande. "
         "Aucun score de compatibilité n’est calculé dans ce sprint."

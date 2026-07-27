@@ -152,3 +152,36 @@ Validé le 27 juillet 2026.
 - canal de candidature classifié sans invention ;
 - interface vérifiée sans erreur après redémarrage propre ;
 - aucun secret, jeton ou contenu réel d’offre ajouté au dépôt.
+
+## Sprint 3 — Persistance PostgreSQL et orchestration Airflow
+
+### État
+
+Validé localement le 27 juillet 2026.
+
+### Décision enregistrée
+
+1. PostgreSQL est retenu dès le développement local et pour la cible de
+   production.
+2. Airflow alimentera PostgreSQL par synchronisations planifiées ; Streamlit
+   consultera la base au lieu d'appeler systématiquement l'API en direct.
+3. Le Sprint 3 est avancé avant La Bonne Alternance, qui devient le Sprint 4.
+4. Le CV et le profil candidat restent temporaires en session pendant ce sprint.
+5. Airflow synchronise toutes les six heures ; le périmètre est configurable :
+   Île-de-France en local (`SYNC_REGION_CODES=11`), national sur OVH (valeur vide).
+6. Le développement local s'exécute entièrement via Docker Compose.
+7. Les offres absentes d'une synchronisation nationale complète et réussie sont
+   supprimées ; aucune suppression ne résulte d'un cycle incomplet ou en erreur.
+8. Le découpage national utilise les régions France Travail, avec une subdivision
+   automatique par période de création au-delà de 3 150 offres ; un segment
+   incomplet bloque la suppression.
+9. Les journaux techniques d'exécution sont conservés 30 jours.
+
+### Résultats
+
+- synchronisation Île-de-France complète : 42 segments, 76 345 offres ;
+- suppression sécurisée uniquement après réussite intégrale du cycle ;
+- Streamlit utilise PostgreSQL pour la recherche et le détail des offres ;
+- les offres fournisseur incomplètes sont ignorées au niveau de leur lot ;
+- 33 tests automatisés réussis ;
+- le planificateur Airflow est actif, avec le prochain créneau à 18:00 UTC.

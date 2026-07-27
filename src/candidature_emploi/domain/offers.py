@@ -113,6 +113,15 @@ class Commune(BaseModel):
         return f"{self.label} ({self.postal_code})"
 
 
+class Region(BaseModel):
+    """Région du référentiel France Travail, utilisée pour le découpage national."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    code: str
+    label: str
+
+
 class RomeSkill(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
