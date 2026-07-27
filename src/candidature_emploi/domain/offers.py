@@ -90,6 +90,7 @@ class SearchCriteria(BaseModel):
     published_within_days: int = Field(default=7, ge=1, le=31)
     page: int = Field(default=0, ge=0)
     page_size: int = Field(default=20, ge=1, le=20)
+    providers: list[str] = Field(default_factory=list)
 
 
 class SearchResult(BaseModel):

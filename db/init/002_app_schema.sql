@@ -30,5 +30,11 @@ CREATE TABLE IF NOT EXISTS app.job_offers (
     last_seen_run_id varchar(36) NOT NULL REFERENCES app.sync_runs(id),
     CONSTRAINT uq_job_offers_provider_external_id UNIQUE(provider, external_id)
 );
+
+CREATE TABLE IF NOT EXISTS app.source_settings (
+    provider VARCHAR(80) PRIMARY KEY,
+    is_visible BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 CREATE INDEX IF NOT EXISTS ix_job_offers_provider ON app.job_offers(provider);
 CREATE INDEX IF NOT EXISTS ix_job_offers_last_seen_run ON app.job_offers(last_seen_run_id);
