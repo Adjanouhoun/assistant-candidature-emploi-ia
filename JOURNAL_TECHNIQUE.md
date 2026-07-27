@@ -92,3 +92,63 @@ Validé le 27 juillet 2026.
 - empreinte SHA-256 du contenu pour distinguer deux fichiers ayant le même nom
   et la même taille ;
 - tests de non-régression ajoutés pour ces deux cas.
+
+## Sprint 2 — France Travail et ROME 4.0
+
+### État
+
+Validé le 27 juillet 2026.
+
+### Décisions enregistrées
+
+1. Rechercher par poste, localisation, rayon, contrat, mode et ancienneté.
+2. Afficher 20 offres par page sans score de compatibilité.
+3. Réutiliser facultativement les critères du profil candidat.
+4. Enrichir une offre avec ROME uniquement à l’ouverture du détail.
+5. Mettre les enrichissements ROME en cache de session.
+6. Respecter strictement les quotas propres à chaque API.
+7. Conserver les jetons OAuth uniquement en mémoire.
+8. Retenter seulement les erreurs temporaires ou de quota.
+9. Distinguer les compétences de l’offre des compétences du métier ROME.
+10. Ne jamais inventer d’email ou d’URL de candidature.
+11. Archiver les contrats OpenAPI officiels sans identifiant local.
+12. Ne persister aucune offre pendant le Sprint 2.
+
+### Vérifications préalables
+
+- OAuth Offres d’emploi réussi ;
+- recherche Offres d’emploi réelle réussie ;
+- ROME Métiers version 61 accessible ;
+- ROME Compétences version 61 accessible ;
+- ROME Fiches métiers version 61 accessible ;
+- `.env` confirmé comme exclu de Git.
+
+### Actions
+
+- [x] Valider les accès et les contrats.
+- [x] Valider le formulaire de recherche.
+- [x] Valider l’enrichissement à la demande.
+- [x] Valider l’authentification et la résilience.
+- [x] Valider le modèle normalisé et le canal de candidature.
+- [x] Valider l’archivage des spécifications OpenAPI.
+- [x] Implémenter les connecteurs et l’interface.
+- [x] Exécuter les tests et la démonstration.
+- [x] Faire valider la clôture du Sprint 2.
+- [x] Commit et push après validation.
+
+### Résultats
+
+- 29 tests automatisés réussis, incluant les 12 tests du Sprint 1 ;
+- contrats OpenAPI archivés et vérifiés ;
+- OAuth et renouvellement de jeton testés ;
+- recherche réelle contrôlée réussie ;
+- 35 015 communes et 12 types de contrat chargés depuis les référentiels ;
+- résolution exacte de Lyon par le code INSEE ;
+- deux offres normalisées lors du test d’intégration ;
+- détail et enrichissement ROME réels réussis ;
+- cache ROME vérifié par test ;
+- modes Emploi et Alternance séparés ;
+- pagination maintenue après filtrage des alternances ;
+- canal de candidature classifié sans invention ;
+- interface vérifiée sans erreur après redémarrage propre ;
+- aucun secret, jeton ou contenu réel d’offre ajouté au dépôt.
