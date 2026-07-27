@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from candidature_emploi.domain.offers import JobOffer
 from candidature_emploi.domain.offers import SearchCriteria, SearchResult
-from candidature_emploi.infrastructure.database import JobOfferRecord, SyncRunRecord
+from candidature_emploi.infrastructure.database import JobOfferRecord, SourceSettingRecord, SyncRunRecord
 
 
 class OfferRepository:
@@ -140,9 +140,10 @@ class OfferRepository:
     def search(self, criteria: SearchCriteria) -> SearchResult:
         with Session(self._engine) as session:
             statement = select(JobOfferRecord).where(
-                JobOfferRecord.provider == "france_travail",
                 func.lower(JobOfferRecord.title).contains(criteria.keywords.casefold()),
             )
+            if criteria.providers:
+                statement = statement.where(JobOfferRecord.provider.in_(criteria.providers))
             if criteria.contract_type:
                 statement = statement.where(JobOfferRecord.contract_type == criteria.contract_type)
             if criteria.opportunity_mode == "emploi":
@@ -159,6 +160,27 @@ class OfferRepository:
                 page=criteria.page, page_size=criteria.page_size, total=total,
                 has_more=(criteria.page + 1) * criteria.page_size < total,
             )
+
+    def available_providers(self) -> list[str]:
+        with Session(self._engine) as session:
+            providers = set(session.scalars(select(JobOfferRecord.provider).distinct()))
+            hidden = set(session.scalars(select(SourceSettingRecord.provider).where(SourceSettingRecord.is_visible.is_(False))))
+            return sorted(providers - hidden)
+
+    def source_settings(self) -> dict[str, bool]:
+        with Session(self._engine) as session:
+            providers = set(session.scalars(select(JobOfferRecord.provider).distinct()))
+            configured = {row.provider: row.is_visible for row in session.scalars(select(SourceSettingRecord))}
+            return {provider: configured.get(provider, True) for provider in sorted(providers)}
+
+    def set_source_visibility(self, provider: str, is_visible: bool) -> None:
+        with Session(self._engine) as session:
+            row = session.get(SourceSettingRecord, provider)
+            if row is None:
+                session.add(SourceSettingRecord(provider=provider, is_visible=is_visible, updated_at=_now()))
+            else:
+                row.is_visible, row.updated_at = is_visible, _now()
+            session.commit()
 
     def purge_run_logs(self, retention_days: int = 30) -> int:
         limit = _now() - timedelta(days=retention_days)

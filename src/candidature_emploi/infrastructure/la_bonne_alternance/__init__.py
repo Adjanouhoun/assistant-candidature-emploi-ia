@@ -1,0 +1,1 @@
+"""Connecteur La Bonne Alternance."""

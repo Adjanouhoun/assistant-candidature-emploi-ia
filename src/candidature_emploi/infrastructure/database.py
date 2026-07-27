@@ -66,6 +66,15 @@ class JobOfferRecord(Base):
     )
 
 
+class SourceSettingRecord(Base):
+    __tablename__ = "source_settings"
+    __table_args__ = {"schema": APP_SCHEMA}
+
+    provider: Mapped[str] = mapped_column(String(80), primary_key=True)
+    is_visible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 def database_url(env_file: Path | None = None) -> str:
     if env_file is not None:
         load_dotenv(env_file, override=False)

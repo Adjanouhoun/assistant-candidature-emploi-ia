@@ -27,6 +27,7 @@ from candidature_emploi.infrastructure.database import create_database_engine
 from candidature_emploi.infrastructure.offer_repository import OfferRepository
 
 PAGE_SIZE = 20
+PROVIDER_LABELS = {"france_travail": "France Travail", "la_bonne_alternance": "La Bonne Alternance"}
 
 
 def initialize_state() -> None:
@@ -90,6 +91,7 @@ def perform_search(form: dict[str, object], commune: Commune | None, page: int =
             published_within_days=form["published_within_days"],
             page=page,
             page_size=PAGE_SIZE,
+            providers=form.get("providers", []),
         )
         stored = repository()
         result = stored.search(criteria) if stored else services().offers.search(criteria)
@@ -142,12 +144,14 @@ def render_search_form() -> None:
     role_default, location_default = profile_defaults()
     if repository() is not None:
         contracts = []
+        provider_options = repository().available_providers()
     else:
         try:
             contracts = load_contract_types()
         except ProviderError as exc:
             st.error(exc.user_message)
             contracts = []
+        provider_options = []
 
     contract_options = {"Tous": ""}
     contract_options.update({label: code for code, label in contracts})
@@ -174,6 +178,12 @@ def render_search_form() -> None:
             horizontal=True,
         )
         recency = st.selectbox("Offres publiées depuis", [1, 3, 7, 14, 31], index=2)
+        selected_providers = st.multiselect(
+            "Sources", provider_options,
+            default=provider_options,
+            format_func=lambda provider: PROVIDER_LABELS.get(provider, provider),
+            help="Les sources sélectionnées sont consultées depuis PostgreSQL.",
+        )
         submitted = st.form_submit_button("Rechercher", type="primary")
 
     if submitted:
@@ -184,6 +194,7 @@ def render_search_form() -> None:
             "contract_type": contract_options[contract_label],
             "opportunity_mode": mode_label.casefold(),
             "published_within_days": recency,
+            "providers": selected_providers,
         }
         resolve_and_search(form)
 
@@ -216,7 +227,7 @@ def render_offer(offer: JobOffer) -> None:
             )
         )
         st.caption(
-            f"Source : France Travail · ROME : {offer.rome_code or 'non renseigné'}"
+            f"Source : {PROVIDER_LABELS.get(offer.provider, offer.provider)} · ROME : {offer.rome_code or 'non renseigné'}"
         )
         if offer.salary_label:
             st.write(f"**Salaire publié :** {offer.salary_label}")

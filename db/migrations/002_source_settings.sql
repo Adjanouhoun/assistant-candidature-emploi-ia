@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS app.source_settings (
+    provider VARCHAR(80) PRIMARY KEY,
+    is_visible BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
