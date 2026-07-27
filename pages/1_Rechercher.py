@@ -19,6 +19,7 @@ from candidature_emploi.application.job_search import (
     create_job_search_services,
     get_cached_rome_enrichment,
 )
+from candidature_emploi.application.compatibility import score_offer
 from candidature_emploi.domain.models import CandidateProfile
 from candidature_emploi.domain.offers import Commune, JobOffer, SearchCriteria
 from candidature_emploi.infrastructure.france_travail.errors import ProviderError
@@ -229,6 +230,16 @@ def render_offer(offer: JobOffer) -> None:
         st.caption(
             f"Source : {PROVIDER_LABELS.get(offer.provider, offer.provider)} · ROME : {offer.rome_code or 'non renseigné'}"
         )
+        profile = st.session_state.get("profile")
+        if isinstance(profile, CandidateProfile):
+            score = score_offer(profile, offer)
+            st.metric("Compatibilité", f"{score.value} %")
+            with st.expander("Comprendre ce score"):
+                for contribution in score.contributions:
+                    if contribution.score is None:
+                        st.write(f"**{contribution.label}** — neutre : {contribution.detail}")
+                    else:
+                        st.write(f"**{contribution.label}** ({contribution.weight} %) — {round(contribution.score * 100)} % : {contribution.detail}")
         if offer.salary_label:
             st.write(f"**Salaire publié :** {offer.salary_label}")
         if st.button("Voir le détail", key=f"detail_{offer.external_id}"):
