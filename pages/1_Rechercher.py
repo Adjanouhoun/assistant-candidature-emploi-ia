@@ -6,6 +6,7 @@ import sys
 import os
 from pathlib import Path
 
+import httpx
 import streamlit as st
 from pydantic import ValidationError
 
@@ -26,6 +27,14 @@ from candidature_emploi.domain.offers import Commune, JobOffer, SearchCriteria
 from candidature_emploi.infrastructure.france_travail.errors import ProviderError
 from candidature_emploi.infrastructure.france_travail.offers import find_communes
 from candidature_emploi.infrastructure.database import create_database_engine
+from candidature_emploi.infrastructure.la_bonne_alternance.config import (
+    LBA_BASE_URL,
+    api_key_from_env,
+)
+from candidature_emploi.infrastructure.la_bonne_alternance.offers import (
+    LBAApplication,
+    LaBonneAlternanceConnector,
+)
 from candidature_emploi.infrastructure.offer_repository import OfferRepository
 
 PAGE_SIZE = 20
@@ -42,6 +51,7 @@ def initialize_state() -> None:
     st.session_state.setdefault("pending_form", None)
     st.session_state.setdefault("offer_details", {})
     st.session_state.setdefault("rome_cache", {})
+    st.session_state.setdefault("application_offer_id", None)
 
 
 def services() -> JobSearchServices:
@@ -232,6 +242,7 @@ def render_offer(offer: JobOffer) -> None:
             f"Source : {PROVIDER_LABELS.get(offer.provider, offer.provider)} · ROME : {offer.rome_code or 'non renseigné'}"
         )
         profile = st.session_state.get("profile")
+        draft: str | None = None
         if isinstance(profile, CandidateProfile):
             score = score_offer(profile, offer)
             st.metric("Compatibilité", f"{score.value} %")
@@ -250,6 +261,11 @@ def render_offer(offer: JobOffer) -> None:
             if draft:
                 st.caption("Brouillon Gemini modifiable — aucune candidature n’est envoyée.")
                 st.text_area("Lettre et email", draft, key=f"draft_text_{offer.external_id}", height=320)
+        render_application_action(
+            offer,
+            profile if isinstance(profile, CandidateProfile) else None,
+            draft,
+        )
         if offer.salary_label:
             st.write(f"**Salaire publié :** {offer.salary_label}")
         if st.button("Voir le détail", key=f"detail_{offer.external_id}"):
@@ -258,6 +274,130 @@ def render_offer(offer: JobOffer) -> None:
         detail = st.session_state.offer_details.get(offer.external_id)
         if detail:
             render_detail(detail)
+
+
+def motivation_letter_from_draft(draft: str | None) -> str:
+    """Isole la lettre du brouillon afin de ne pas envoyer le mail au recruteur."""
+
+    if not draft:
+        return ""
+    letter_marker = "## Lettre de motivation"
+    email_marker = "## Email de candidature"
+    content = draft.split(letter_marker, 1)[-1]
+    return content.split(email_marker, 1)[0].strip()
+
+
+def render_application_action(
+    offer: JobOffer,
+    profile: CandidateProfile | None,
+    draft: str | None,
+) -> None:
+    """Affiche un parcours d'envoi seulement lorsqu'un canal API est documenté."""
+
+    if offer.provider != "la_bonne_alternance" or not offer.application_recipient_id:
+        if offer.apply_url:
+            st.link_button("Candidater via le canal officiel", offer.apply_url)
+        return
+    if profile is None:
+        st.info(
+            "Cette offre peut être envoyée via La Bonne Alternance. Chargez puis "
+            "validez votre profil et votre CV pour ouvrir la confirmation sécurisée."
+        )
+        return
+    document = st.session_state.get("candidate_document")
+    valid_document = (
+        isinstance(document, dict)
+        and isinstance(document.get("name"), str)
+        and isinstance(document.get("content"), bytes)
+    )
+    if not valid_document:
+        st.info("Pour candidater via l’API, rechargez votre CV dans « Mon profil candidat ». Il restera limité à cette session.")
+        return
+    if st.session_state.application_offer_id != offer.external_id:
+        if st.button("Préparer l’envoi sécurisé", key=f"prepare_apply_{offer.external_id}"):
+            st.session_state.application_offer_id = offer.external_id
+            st.rerun()
+        return
+
+    st.warning(
+        "Vous êtes sur la page de confirmation. L’envoi réel vers La Bonne Alternance "
+        "ne sera effectué qu’après votre validation ci-dessous."
+    )
+    with st.form(f"confirm_apply_{offer.external_id}"):
+        first_name = st.text_input("Prénom", key=f"apply_first_name_{offer.external_id}")
+        last_name = st.text_input("Nom", key=f"apply_last_name_{offer.external_id}")
+        email = st.text_input("Email", value=profile.email, key=f"apply_email_{offer.external_id}")
+        phone = st.text_input("Téléphone", value=profile.phone, key=f"apply_phone_{offer.external_id}")
+        message = st.text_area(
+            "Lettre transmise avec la candidature",
+            value=motivation_letter_from_draft(draft),
+            key=f"apply_message_{offer.external_id}",
+            height=220,
+            help="Ce contenu reste dans la session et n’est pas enregistré dans l’historique.",
+        )
+        st.caption(
+            f"Seront transmis à La Bonne Alternance : votre CV ({document['name']}), "
+            "vos coordonnées et cette lettre. L’historique ne conservera que la source, "
+            "l’identifiant de l’offre, la date, le statut et l’identifiant de transmission."
+        )
+        confirmed = st.checkbox(
+            "Je confirme l’envoi réel de ma candidature à cette offre.",
+            key=f"apply_confirmed_{offer.external_id}",
+        )
+        submitted = st.form_submit_button("Envoyer ma candidature", type="primary")
+    if not submitted:
+        return
+    if not confirmed:
+        st.error("Cochez la confirmation explicite avant tout envoi.")
+        return
+    try:
+        with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
+            application_id = LaBonneAlternanceConnector(
+                client, api_key_from_env(PROJECT_ROOT / ".env"), LBA_BASE_URL
+            ).submit_application(
+                LBAApplication(
+                    recipient_id=offer.application_recipient_id,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    phone=phone,
+                    attachment_name=document["name"],
+                    attachment_content=document["content"],
+                    message=message,
+                )
+            )
+    except ProviderError as exc:
+        record_application_event(offer, "failed", error_summary=type(exc).__name__)
+        st.error(exc.user_message)
+        return
+    event_id = record_application_event(offer, "submitted", transmission_id=application_id)
+    st.success("Candidature transmise à La Bonne Alternance.")
+    st.caption(f"Identifiant de transmission : {application_id} · Journal : {event_id or 'indisponible'}")
+    st.session_state.application_offer_id = None
+
+
+def record_application_event(
+    offer: JobOffer,
+    status: str,
+    *,
+    transmission_id: str | None = None,
+    error_summary: str | None = None,
+) -> str | None:
+    """Le journal n'est jamais bloquant après un envoi réel déjà accepté."""
+
+    stored = repository()
+    if stored is None:
+        return None
+    try:
+        return stored.record_application_event(
+            provider=offer.provider,
+            offer_external_id=offer.external_id,
+            status=status,
+            transmission_id=transmission_id,
+            error_summary=error_summary,
+        )
+    except Exception:
+        return None
 
 
 def load_offer_detail(external_id: str) -> None:
@@ -304,9 +444,7 @@ def render_detail(offer: JobOffer) -> None:
             st.write(", ".join(item.label for item in enrichment.skills))
     elif offer.rome_code:
         st.caption("Enrichissement ROME indisponible ; l’offre reste consultable.")
-    if offer.apply_url:
-        st.link_button("Accéder au canal officiel de candidature", offer.apply_url)
-    else:
+    if not offer.apply_url:
         st.info("Canal de candidature non fourni par la source.")
 
 

@@ -2,7 +2,8 @@
 
 ## 1. Navigation proposée
 
-1. **Mon profil** — importer le CV et vérifier les informations extraites.
+1. **Mon profil** — importer le CV, accepter explicitement ou non l'analyse
+   Gemini du texte extrait, puis vérifier les informations proposées.
 2. **Rechercher** — saisir les critères et sélectionner le mode.
 3. **Résultats** — filtrer, classer et comparer les offres.
 4. **Analyse** — comprendre le score et les écarts.
@@ -20,6 +21,18 @@
 
 ROME intervient comme enrichissement et n’apparaît pas comme une source
 d’offres sélectionnable par le candidat.
+
+## 2 bis. Création du profil depuis le CV
+
+1. Le CV est lu localement ; l'OCR local est utilisé seulement si nécessaire.
+2. L'interface indique qu'aucune donnée n'a été transmise à Gemini.
+3. L'utilisateur accepte explicitement l'envoi ponctuel du texte extrait.
+4. Gemini retourne un profil JSON avec un extrait de preuve par information.
+5. L'application écarte toute proposition dont la preuve n'est pas présente
+   dans le texte local, puis l'utilisateur corrige et valide son profil.
+
+Gemini n'attribue aucun score de compatibilité et ne déclenche aucune recherche
+ou candidature.
 
 ## 3. Résultat d’une offre
 
@@ -64,3 +77,14 @@ sont présents, mais ne les réaffiche pas.
 
 Une case cochée par défaut ne constitue pas une confirmation acceptable.
 
+Une transmission API est proposée uniquement lorsqu'une offre expose un
+destinataire documenté par sa source. La page de confirmation résume les
+données qui seront transmises et laisse l'utilisateur vérifier prénom, nom,
+email, téléphone et lettre avant l'envoi. Les autres offres restent dirigées
+vers leur canal officiel publié.
+
+## 6. Historique des candidatures
+
+L'historique affiche uniquement les métadonnées de transmission autorisées :
+source, offre, date, statut, identifiant de transmission et identifiant de
+journal. Il n'affiche ni ne restaure le CV, la lettre ou les coordonnées.

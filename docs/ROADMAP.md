@@ -54,10 +54,25 @@ des données utilisées et mécanismes de repli.
 Objectif : gérer la redirection ou la transmission autorisée avec validation
 humaine, historique et reprise sur erreur.
 
-## Sprint 8 — Qualité, observabilité et démonstration
+## Sprint 8 — Qualité du profil candidat et OCR local
 
-Objectif : tests de bout en bout, indicateurs, documentation utilisateur,
-scénario de démonstration et évaluation des ressources nécessaires.
+Objectif : renforcer la lecture locale des CV PDF, introduire un audit ATS
+explicable de lisibilité et de complétude, puis faire valider le parcours par
+l'utilisateur. Les tests de bout en bout, indicateurs et la démonstration
+globale restent à planifier après cette validation. L'extraction locale ne
+prend plus de décision de classement métier : elle produit le texte local qui
+alimente le Sprint 9 après consentement de l'utilisateur.
+
+## Sprint 9 — Profil structuré Gemini avec preuves
+
+Objectif : convertir le texte extrait localement du CV en profil éditable grâce
+à une sortie Gemini JSON contrainte, uniquement après consentement explicite.
+Chaque donnée proposée doit être accompagnée d'un extrait du CV et est rejetée
+lorsque cette preuve n'est pas retrouvée localement. Le score de compatibilité
+reste déterministe et indépendant de Gemini.
+
+Preuves : tests du contrat JSON, rejet des éléments non prouvés, absence d'appel
+avant consentement et validation manuelle du parcours Streamlit.
 
 ## Intégration ultérieure
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+from dataclasses import dataclass
 from datetime import datetime
 
 import httpx
@@ -9,11 +11,26 @@ import httpx
 from candidature_emploi.domain.offers import ApplicationCapability, JobLocation, JobOffer, JobSkill
 from candidature_emploi.infrastructure.france_travail.errors import (
     ProviderAuthenticationError,
+    ProviderRateLimitError,
     ProviderResponseError,
     ProviderUnavailableError,
 )
 
 FRANCE_TRAVAIL_PARTNER = "france travail"
+
+
+@dataclass(frozen=True)
+class LBAApplication:
+    """Données de transmission conservées uniquement le temps de la requête."""
+
+    recipient_id: str
+    first_name: str
+    last_name: str
+    email: str
+    phone: str
+    attachment_name: str
+    attachment_content: bytes
+    message: str = ""
 
 
 class LaBonneAlternanceConnector:
@@ -64,6 +81,55 @@ class LaBonneAlternanceConnector:
                     continue
                 offers[offer.external_id] = offer
         return list(offers.values())
+
+    def submit_application(self, application: LBAApplication) -> str:
+        """Transmet une candidature après confirmation explicite de l'utilisateur."""
+
+        required = {
+            "destinataire": application.recipient_id,
+            "prénom": application.first_name,
+            "nom": application.last_name,
+            "email": application.email,
+            "téléphone": application.phone,
+            "nom du CV": application.attachment_name,
+        }
+        missing = [label for label, value in required.items() if not value.strip()]
+        if missing or not application.attachment_content:
+            raise ProviderRequestError("Informations de candidature incomplètes.")
+        payload = {
+            "recipient_id": application.recipient_id.strip(),
+            "applicant_first_name": application.first_name.strip(),
+            "applicant_last_name": application.last_name.strip(),
+            "applicant_email": application.email.strip(),
+            "applicant_phone": application.phone.strip(),
+            "applicant_attachment_name": application.attachment_name.strip(),
+            "applicant_attachment_content": base64.b64encode(application.attachment_content).decode("ascii"),
+            "applicant_message": application.message.strip(),
+        }
+        try:
+            response = self._client.post(
+                f"{self._base_url}/job/v1/apply",
+                headers={"Accept": "application/json", "Authorization": f"Bearer {self._api_key}"},
+                json=payload,
+            )
+        except httpx.RequestError as exc:
+            raise ProviderUnavailableError("Connexion à La Bonne Alternance impossible.") from exc
+        if response.status_code in {401, 403}:
+            raise ProviderAuthenticationError("Clé La Bonne Alternance refusée.")
+        if response.status_code == 429:
+            raise ProviderRateLimitError("Quota La Bonne Alternance atteint.")
+        if response.status_code >= 500:
+            raise ProviderUnavailableError("La Bonne Alternance est indisponible.")
+        if response.status_code != 202:
+            raise ProviderRequestError("La candidature a été refusée par La Bonne Alternance.")
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ProviderResponseError("Réponse de candidature La Bonne Alternance invalide.") from exc
+        application_id = _text(payload.get("id")) if isinstance(payload, dict) else ""
+        if not application_id:
+            raise ProviderResponseError("Identifiant de candidature La Bonne Alternance absent.")
+        return application_id
 
     def _get_json(self, url: str, *, authenticated: bool) -> dict[str, object]:
         headers = {"Accept": "application/json"}
@@ -118,6 +184,7 @@ def normalize_offer(raw: object) -> JobOffer:
     rome_code = _text(types[0]) if isinstance(types, list) and types else ""
     desired = [JobSkill(label=_text(item)) for item in offer.get("desired_skills", []) if _text(item)] if isinstance(offer.get("desired_skills"), list) else []
     apply_url = _url(apply.get("url"))
+    recipient_id = _text(apply.get("recipient_id")) or None
     return JobOffer(
         provider="la_bonne_alternance", external_id=external_id, title=title,
         description=description, created_at=_datetime(publication.get("creation")),
@@ -127,6 +194,7 @@ def normalize_offer(raw: object) -> JobOffer:
         contract_type="ALTERNANCE", contract_label="Alternance", is_alternance=True,
         desired_skills=desired, apply_url=apply_url,
         application_capability=ApplicationCapability.REDIRECT if apply_url else ApplicationCapability.UNAVAILABLE,
+        application_recipient_id=recipient_id,
         source_reference=f"la_bonne_alternance:{external_id}",
     )
 

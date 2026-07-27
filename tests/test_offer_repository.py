@@ -51,6 +51,26 @@ def test_upsert_preserves_a_single_offer_per_provider_and_external_id() -> None:
     assert repository.last_successful_sync("france_travail") is not None
 
 
+def test_application_history_contains_only_operational_metadata() -> None:
+    engine = create_engine("sqlite://").execution_options(
+        schema_translate_map={"app": None}
+    )
+    Base.metadata.create_all(engine)
+    repository = OfferRepository(engine)
+
+    event_id = repository.record_application_event(
+        provider="la_bonne_alternance",
+        offer_external_id="offer-123",
+        status="submitted",
+        transmission_id="application-456",
+    )
+
+    events = repository.application_events()
+    assert [(event.id, event.provider, event.offer_external_id, event.status, event.transmission_id) for event in events] == [
+        (event_id, "la_bonne_alternance", "offer-123", "submitted", "application-456")
+    ]
+
+
 def _offer(external_id: str, title: str = "Data engineer") -> JobOffer:
     return JobOffer(
         provider="france_travail",

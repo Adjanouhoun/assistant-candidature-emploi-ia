@@ -75,6 +75,21 @@ class SourceSettingRecord(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class ApplicationEventRecord(Base):
+    """Historique minimal des actions de candidature, sans données candidat."""
+
+    __tablename__ = "application_events"
+    __table_args__ = {"schema": APP_SCHEMA}
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    provider: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    offer_external_id: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False, index=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    transmission_id: Mapped[str | None] = mapped_column(String(160))
+    error_summary: Mapped[str | None] = mapped_column(String(160))
+
+
 def database_url(env_file: Path | None = None) -> str:
     if env_file is not None:
         load_dotenv(env_file, override=False)

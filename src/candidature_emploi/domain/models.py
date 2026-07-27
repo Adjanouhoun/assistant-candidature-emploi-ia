@@ -37,6 +37,16 @@ class Education(BaseModel):
     description: str = ""
 
 
+class Project(BaseModel):
+    """Projet ou preuve de concept présenté par le candidat."""
+
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    title: str = ""
+    technologies: str = ""
+    description: str = ""
+
+
 class LanguageSkill(BaseModel):
     """Langue et niveau déclaré ou extrait."""
 
@@ -76,8 +86,14 @@ class ExtractionMetadata(BaseModel):
     confidence: ConfidenceLevel = ConfidenceLevel.LOW
     warnings: list[str] = Field(default_factory=list)
     extracted_sections: list[str] = Field(default_factory=list)
+    unclassified_blocks: list[str] = Field(default_factory=list)
 
-    @field_validator("warnings", "extracted_sections", mode="before")
+    @field_validator(
+        "warnings",
+        "extracted_sections",
+        "unclassified_blocks",
+        mode="before",
+    )
     @classmethod
     def normalize_lists(cls, value: object) -> object:
         return _normalize_string_list(value)
@@ -97,6 +113,7 @@ class CandidateProfile(BaseModel):
     transferable_skills: list[str] = Field(default_factory=list)
     experiences: list[Experience] = Field(default_factory=list)
     education: list[Education] = Field(default_factory=list)
+    projects: list[Project] = Field(default_factory=list)
     certifications: list[str] = Field(default_factory=list)
     languages: list[LanguageSkill] = Field(default_factory=list)
     preferences: CandidatePreferences = Field(default_factory=CandidatePreferences)
@@ -123,6 +140,7 @@ class CandidateProfile(BaseModel):
             "transferable_skills": self.transferable_skills,
             "experiences": [item.model_dump() for item in self.experiences],
             "education": [item.model_dump() for item in self.education],
+            "projects": [item.model_dump() for item in self.projects],
             "certifications": self.certifications,
             "languages": [item.model_dump() for item in self.languages],
             "preferences": self.preferences.model_dump(),

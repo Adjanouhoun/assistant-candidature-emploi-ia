@@ -16,7 +16,10 @@ def test_privacy_notice_is_visible_before_upload() -> None:
         "traités temporairement pendant cette session" in warning.value
         for warning in app.warning
     )
-    assert any("aucune donnée n’est envoyée à Gemini" in item.value for item in app.caption)
+    assert any(
+        "n'est envoyé à Gemini qu'après votre confirmation" in item.value
+        for item in app.caption
+    )
 
 
 def test_upload_fingerprint_distinguishes_same_name_and_size() -> None:

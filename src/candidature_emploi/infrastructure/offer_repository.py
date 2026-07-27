@@ -13,7 +13,33 @@ from sqlalchemy.orm import Session
 
 from candidature_emploi.domain.offers import JobOffer
 from candidature_emploi.domain.offers import SearchCriteria, SearchResult
-from candidature_emploi.infrastructure.database import JobOfferRecord, SourceSettingRecord, SyncRunRecord
+from candidature_emploi.infrastructure.database import (
+    ApplicationEventRecord,
+    JobOfferRecord,
+    SourceSettingRecord,
+    SyncRunRecord,
+)
+
+
+class ApplicationEvent:
+    """Métadonnées consultables d'une tentative de candidature."""
+
+    def __init__(
+        self,
+        *,
+        id: str,
+        provider: str,
+        offer_external_id: str,
+        status: str,
+        occurred_at: datetime,
+        transmission_id: str | None,
+    ) -> None:
+        self.id = id
+        self.provider = provider
+        self.offer_external_id = offer_external_id
+        self.status = status
+        self.occurred_at = occurred_at
+        self.transmission_id = transmission_id
 
 
 class OfferRepository:
@@ -181,6 +207,51 @@ class OfferRepository:
             else:
                 row.is_visible, row.updated_at = is_visible, _now()
             session.commit()
+
+    def record_application_event(
+        self,
+        *,
+        provider: str,
+        offer_external_id: str,
+        status: str,
+        transmission_id: str | None = None,
+        error_summary: str | None = None,
+    ) -> str:
+        """Conserve seulement la trace opérationnelle autorisée de l'action."""
+
+        event = ApplicationEventRecord(
+            provider=provider,
+            offer_external_id=offer_external_id,
+            status=status,
+            occurred_at=_now(),
+            transmission_id=transmission_id,
+            error_summary=error_summary,
+        )
+        with Session(self._engine) as session:
+            session.add(event)
+            session.commit()
+            return event.id
+
+    def application_events(self, limit: int = 50) -> list[ApplicationEvent]:
+        """Retourne le journal sans exposer de contenu de candidature."""
+
+        with Session(self._engine) as session:
+            records = session.scalars(
+                select(ApplicationEventRecord)
+                .order_by(ApplicationEventRecord.occurred_at.desc())
+                .limit(limit)
+            ).all()
+        return [
+            ApplicationEvent(
+                id=record.id,
+                provider=record.provider,
+                offer_external_id=record.offer_external_id,
+                status=record.status,
+                occurred_at=record.occurred_at,
+                transmission_id=record.transmission_id,
+            )
+            for record in records
+        ]
 
     def purge_run_logs(self, retention_days: int = 30) -> int:
         limit = _now() - timedelta(days=retention_days)

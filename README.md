@@ -5,10 +5,14 @@ d’alternance, explique la compatibilité et prépare une candidature personnal
 
 ## Statut
 
-Le projet a atteint la revue du **Sprint 2 — France Travail et ROME 4.0**.
-L’application charge localement un CV, permet de corriger le profil, recherche
-des offres France Travail et enrichit leur détail à la demande avec le ROME.
-Aucun score de compatibilité et aucun envoi de candidature ne sont implémentés.
+Le projet est au **Sprint 9 — Profil structuré Gemini avec preuves**.
+L’application extrait d'abord le CV localement, puis ne transmet son texte à
+Gemini qu'après confirmation explicite pour proposer un profil éditable. Chaque
+proposition est contrôlée par un extrait retrouvé dans le CV. Les offres sont
+recherchées depuis PostgreSQL, le score reste déterministe et explicable, et la
+candidature est préparée avant redirection vers le canal officiel ou transmission
+La Bonne Alternance confirmée. Le CV, les coordonnées et le message ne sont
+jamais enregistrés dans l’historique de candidature.
 
 ## Sources prévues pour le POC
 
@@ -33,6 +37,7 @@ Aucun score de compatibilité et aucun envoi de candidature ne sont implémenté
 - [Contrat des connecteurs](docs/CONNECTEURS.md)
 - [Parcours Streamlit](docs/PARCOURS_STREAMLIT.md)
 - [Sécurité et données personnelles](docs/SECURITE_DONNEES.md)
+- [Déploiement OVH](docs/DEPLOIEMENT_OVH.md)
 - [Feuille de route](docs/ROADMAP.md)
 - [Journal technique](JOURNAL_TECHNIQUE.md)
 
