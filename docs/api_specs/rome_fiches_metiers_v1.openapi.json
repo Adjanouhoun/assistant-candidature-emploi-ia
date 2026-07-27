@@ -1,0 +1,694 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "version": "1",
+    "title": "ROME V4.0 - Fiches ROME",
+    "description": "L'API « ROME 4.0 - Fiches métiers » permet de structurer les données au format de la fiche ROME.<br/> Cette API vous permet d'identifier, pour chaque fiche :<br/> <ul> <li>Les groupes de compétences mobilisées : les compétences sont classées et ordonnées par enjeu,</li> <li>Les groupes de savoirs : les savoirs sont classés et ordonnés par catégorie de savoir.</li> </ul>\r\n\r\n## Aide à l'utilisation de l'API\r\nN'hésitez pas à vous référer au [modèle conceptuel de données](https://francetravail.io/api-peio/v2/pages-document/fichier/606/rome-4-0-fiches-metiers-modele-donnees.pdf) de l'API pour définir vos appels aux services.\r\n\r\n## Versions\r\nConsultez ici l’[historique des versions](https://francetravail.io/api-peio/v2/pages-document/fichier/609/rome-4-0-versions.pdf) du ROME 4.0."
+  },
+  "servers": [
+    {
+      "url": "https://api.francetravail.io/partenaire/rome-fiches-metiers"
+    }
+  ],
+  "paths": {
+    "/v1/fiches-rome/fiche-metier": {
+      "get": {
+        "tags": [
+          "Fiche métier"
+        ],
+        "summary": "Lister les fiches métier",
+        "description": "Permet de lister les fiches métier.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerFichesMetier",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "code",
+                "groupescompetencesmobilisees(competences(libelle,code),enjeu(libelle,code))",
+                "groupessavoirs(savoirs(libelle,code),categoriesavoirs(libelle,code))",
+                "metier(libelle,code)"
+              ],
+              "example": "code,metier(libelle,code)"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des fiches métier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FicheMetier"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "code": "A1201",
+                        "groupesCompetencesMobilisees": [
+                          {
+                            "competences": [
+                              {
+                                "type": "string",
+                                "libelle": "Techniques de soudage",
+                                "code": "100007"
+                              }
+                            ],
+                            "enjeu": {
+                              "libelle": "Animation",
+                              "code": "3"
+                            }
+                          }
+                        ],
+                        "groupesSavoirs": [
+                          {
+                            "savoirs": [
+                              {
+                                "type": "SAVOIR",
+                                "libelle": "Techniques de soudage",
+                                "code": "100007"
+                              }
+                            ],
+                            "categorieSavoirs": {
+                              "libelle": "Véhicules",
+                              "code": "30"
+                            }
+                          }
+                        ],
+                        "metier": {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201"
+                        }
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "code": "A1201",
+                        "metier": {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-fiches-metiersv1"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/fiches-rome/fiche-metier/{code}": {
+      "get": {
+        "tags": [
+          "Fiche métier"
+        ],
+        "summary": "Lire une fiche métier",
+        "description": "Permet de lire une fiche métier depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireFicheMetier",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "code",
+                "datefin",
+                "groupescompetencesmobilisees(competences(libelle,code),enjeu(libelle,code))",
+                "groupessavoirs(savoirs(libelle,code),categoriesavoirs(libelle,code))",
+                "metier(libelle,code)",
+                "obsolete"
+              ],
+              "example": "obsolete,code,groupescompetencesmobilisees(competences(libelle,code),enjeu(libelle,code)),groupessavoirs(savoirs(libelle,code),categoriesavoirs(libelle,code)),datefin,metier(libelle,code)"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code de la fiche métier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données pour une fiche métier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FicheMetier"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "obsolete": false,
+                      "code": "A1201",
+                      "groupesCompetencesMobilisees": [
+                        {
+                          "competences": [
+                            {
+                              "type": "string",
+                              "libelle": "Techniques de soudage",
+                              "code": "100007"
+                            }
+                          ],
+                          "enjeu": {
+                            "libelle": "Animation",
+                            "code": "3"
+                          }
+                        }
+                      ],
+                      "groupesSavoirs": [
+                        {
+                          "savoirs": [
+                            {
+                              "type": "SAVOIR",
+                              "libelle": "Techniques de soudage",
+                              "code": "100007"
+                            }
+                          ],
+                          "categorieSavoirs": {
+                            "libelle": "Véhicules",
+                            "code": "30"
+                          }
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "metier": {
+                        "libelle": "Bûcheronnage et élagage",
+                        "code": "A1201"
+                      }
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "obsolete": false,
+                      "code": "A1201",
+                      "groupesCompetencesMobilisees": [
+                        {
+                          "competences": [
+                            {
+                              "type": "string",
+                              "libelle": "Techniques de soudage",
+                              "code": "100007"
+                            }
+                          ],
+                          "enjeu": {
+                            "libelle": "Animation",
+                            "code": "3"
+                          }
+                        }
+                      ],
+                      "groupesSavoirs": [
+                        {
+                          "savoirs": [
+                            {
+                              "type": "SAVOIR",
+                              "libelle": "Techniques de soudage",
+                              "code": "100007"
+                            }
+                          ],
+                          "categorieSavoirs": {
+                            "libelle": "Véhicules",
+                            "code": "30"
+                          }
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "metier": {
+                        "libelle": "Bûcheronnage et élagage",
+                        "code": "A1201"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-fiches-metiersv1"
+            ]
+          }
+        ]
+      }
+    },
+    "/v1/fiches-rome/version": {
+      "get": {
+        "tags": [
+          "Versionning du ROME"
+        ],
+        "summary": "Récupérer la version actuelle du ROME",
+        "description": "Récupère la version actuelle du ROME.",
+        "operationId": "lireVersion",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "version",
+                "lastModifiedDate",
+                "version,lastModifiedDate"
+              ],
+              "example": "version,lastModifiedDate"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionRome"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "version": "19",
+                      "lastModifiedDate": "2025-05-22T12:04:43.281Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "version": "19",
+                      "lastModifiedDate": "2025-05-22T12:04:43.281Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-fiches-metiersv1"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FicheMetier": {
+        "type": "object",
+        "description": "Fiche Métier",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la fiche métier",
+            "example": "A1201"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "groupesCompetencesMobilisees": {
+            "type": "array",
+            "description": "Groupes de compétences mobilisées",
+            "items": {
+              "$ref": "#/components/schemas/GroupeCompetences"
+            }
+          },
+          "groupesSavoirs": {
+            "type": "array",
+            "description": "Groupes de savoirs",
+            "items": {
+              "$ref": "#/components/schemas/GroupeSavoirs"
+            }
+          },
+          "metier": {
+            "$ref": "#/components/schemas/Metier"
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          }
+        }
+      },
+      "GroupeCompetences": {
+        "type": "object",
+        "description": "Groupe de compétences",
+        "properties": {
+          "competences": {
+            "type": "array",
+            "description": "Compétences rattachées. Il peut s'agir, de façon pêle-mêle, de macro-savoir-faire, de macro-savoir-êtres professionnels ou bien de compétence détaillée. Il ne peut pas y avoir de savoirs.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CompetenceDetaillee"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirEtreProfessionnel"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirFaire"
+                },
+                {
+                  "$ref": "#/components/schemas/Savoir"
+                }
+              ]
+            }
+          },
+          "enjeu": {
+            "$ref": "#/components/schemas/Enjeu"
+          }
+        }
+      },
+      "CompetenceDetaillee": {
+        "type": "object",
+        "description": "Compétence détaillée (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'COMPETENCE-DETAILLEE'."
+              }
+            }
+          }
+        ]
+      },
+      "Competence": {
+        "type": "object",
+        "description": "Compétence (en provenance du référentiel 'Compétences'). Cette entité se décompose en quatre catégories : les macro-savoir-faires, les macro-savoir-êtres professionnels, les compétences détaillées et enfin les savoirs.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la compétence.",
+            "example": "100007"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de la compétence.",
+            "example": "Techniques de soudage"
+          },
+          "type": {
+            "type": "string",
+            "description": "Le type de l'objet. Il y a quatre valeurs possibles :\n<ul>\n<li>'MACRO-SAVOIR-FAIRE' pour un macro-savoir-faire</li>\n<li>'MACRO-SAVOIR-ETRE-PROFESSIONNEL' pour un macro-savoir-être professionnel</li>\n<li>'COMPETENCE-DETAILLEE' pour un compétence détaillée</li>\n<li>'SAVOIR' pour un savoir</li>\n</ul>\n"
+          }
+        },
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "MacroSavoirEtreProfessionnel": {
+        "type": "object",
+        "description": "Macro savoir-être professionnel (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'MACRO-SAVOIR-ETRE-PROFESSIONNEL'."
+              }
+            }
+          }
+        ]
+      },
+      "MacroSavoirFaire": {
+        "type": "object",
+        "description": "Macro savoir-faire (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'MACRO-SAVOIR-FAIRE'."
+              }
+            }
+          }
+        ]
+      },
+      "Savoir": {
+        "type": "object",
+        "description": "Savoir (en provenance du référentiel 'Compétences').",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la compétence.",
+            "example": "100007"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de la compétence.",
+            "example": "Techniques de soudage"
+          },
+          "type": {
+            "type": "string",
+            "description": "Cette propriété est forcément à la valeur 'SAVOIR'."
+          }
+        }
+      },
+      "Enjeu": {
+        "type": "object",
+        "description": "Enjeu (en provenance du référentiel 'Compétences')",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de l'enjeu.",
+            "example": "3"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de l'enjeu.",
+            "example": "Animation"
+          }
+        }
+      },
+      "GroupeSavoirs": {
+        "type": "object",
+        "description": "Groupe de savoirs",
+        "properties": {
+          "categorieSavoirs": {
+            "$ref": "#/components/schemas/CategorieSavoirs"
+          },
+          "savoirs": {
+            "type": "array",
+            "description": "Savoirs rattachés",
+            "items": {
+              "$ref": "#/components/schemas/Savoir"
+            }
+          }
+        }
+      },
+      "CategorieSavoirs": {
+        "type": "object",
+        "description": "Catégorie de savoir (en provenance du référentiel 'Compétences')",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la catégorie de savoirs.",
+            "example": "30"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de la catégorie de savoirs.",
+            "example": "Véhicules"
+          }
+        }
+      },
+      "Metier": {
+        "type": "object",
+        "description": "Métier (depuis le référentiel 'Métiers')",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du métier.",
+            "example": "A1201"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé unique du métier.",
+            "example": "Bûcheronnage et élagage"
+          }
+        }
+      },
+      "VersionRome": {
+        "title": "VersionRome",
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "La version actuelle.",
+            "example": "19"
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "description": "La date de dernière modification de la version.",
+            "format": "date-time"
+          }
+        },
+        "description": "Version du rome"
+      }
+    },
+    "securitySchemes": {
+      "authentification_partenaire": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=/partenaire",
+            "scopes": {
+              "nomenclatureRome": "Obligatoire",
+              "api_rome-fiches-metiersv1": "Obligatoire"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,10 +5,10 @@ d’alternance, explique la compatibilité et prépare une candidature personnal
 
 ## Statut
 
-Le projet a atteint la revue du **Sprint 1 — socle local et profil candidat**.
-L’application charge localement un PDF textuel ou un DOCX, construit un profil
-provisoire et permet à l’utilisateur de le corriger. Aucun appel vers une API
-externe et aucun envoi de candidature ne sont implémentés.
+Le projet a atteint la revue du **Sprint 2 — France Travail et ROME 4.0**.
+L’application charge localement un CV, permet de corriger le profil, recherche
+des offres France Travail et enrichit leur détail à la demande avec le ROME.
+Aucun score de compatibilité et aucun envoi de candidature ne sont implémentés.
 
 ## Sources prévues pour le POC
 
@@ -50,6 +50,16 @@ streamlit run app.py
 L’application s’ouvre sur l’adresse indiquée par Streamlit. Le CV et le profil
 restent uniquement dans la session active.
 
+Pour activer la recherche d’offres, créer un fichier `.env` local :
+
+```text
+FRANCE_TRAVAIL_CLIENT_ID=
+FRANCE_TRAVAIL_CLIENT_SECRET=
+```
+
+Ce fichier est exclu de Git. Ne jamais ajouter les valeurs dans
+`.env.example`, les journaux ou une capture d’écran.
+
 ## Tests
 
 ```bash
@@ -62,8 +72,9 @@ Les tests utilisent uniquement des PDF et DOCX synthétiques créés en mémoire
 
 ```text
 app.py                                  Interface Streamlit
+pages/1_Rechercher.py                    Recherche et détail des offres
 src/candidature_emploi/domain/          Modèle candidat
-src/candidature_emploi/application/     Construction du profil
-src/candidature_emploi/infrastructure/  Extraction PDF et DOCX
+src/candidature_emploi/application/     Cas d’usage
+src/candidature_emploi/infrastructure/  Extraction et connecteurs externes
 tests/                                  Tests synthétiques
 ```

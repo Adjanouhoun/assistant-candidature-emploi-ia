@@ -1,0 +1,4182 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "ROME 4.0 - Métiers",
+    "description": "Référentiel des professions caractérisées par une spécificité exigeant un apprentissage, de l'expérience, etc., et entrant dans un cadre légal.<br/>Un métier est une activité professionnelle pouvant nécessiter une formation professionnelle et des compétences métier et transverses garantissant une rémunération (salariée ou non salariée).<br/>Le métier recherché correspond au métier qui peut être exercé avec ou sans délai (avec ou sans action de formation) correspondant soit au métier exercé et perdu, soit à un premier ‘emploi’ lors de l'entrée sur le marché du travail. Il est l’un des éléments permettant de contractualiser l’ORE – Offre Raisonnable d’Emploi - dans le profil de compétences du dossier MAP du demandeur d'emploi.\r\n\r\n## Aide à l'utilisation de l'API\r\nN'hésitez pas à vous référer au [modèle conceptuel de données](https://francetravail.io/api-peio/v2/pages-document/fichier/605/rome-4-0-metiers-modele-donnees.pdf) de l'API pour définir vos appels aux services.\r\n\r\n## Versions\r\nConsultez ici l’[historique des versions](https://francetravail.io/api-peio/v2/pages-document/fichier/609/rome-4-0-versions.pdf) du ROME 4.0.",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "https://api.francetravail.io/partenaire/rome-metiers"
+    }
+  ],
+  "paths": {
+    "/v1/metiers/appellation": {
+      "get": {
+        "tags": [
+          "Appellation"
+        ],
+        "summary": "Lister les appellations",
+        "description": "Permet d'obtenir la liste des appellation des métiers.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerAppellations",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "appellationesco(libelle,uri)",
+                "classification",
+                "code",
+                "emploicadre",
+                "emploireglemente",
+                "libelle",
+                "libellecourt",
+                "metier(emploireglemente,libelle,domaineprofessionnel(libelle,code,granddomaine(libelle,code)),code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique)",
+                "romeparent",
+                "secondaire",
+                "transitiondemographique",
+                "transitionecologique",
+                "transitionecologiquedetaillee",
+                "transitionnumerique"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des appellations des métiers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Appellation"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "emploiReglemente": false,
+                        "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                        "libelle": "Chef / Cheffe de station fruitière",
+                        "appellationEsco": {
+                          "libelle": "string",
+                          "uri": "string"
+                        },
+                        "code": "12374",
+                        "emploiCadre": false,
+                        "transitionEcologique": false,
+                        "transitionNumerique": false,
+                        "transitionDemographique": false,
+                        "classification": "PRINCIPALE",
+                        "secondaire": false,
+                        "romeParent": "12374",
+                        "libelleCourt": "Chef de station fruitière",
+                        "metier": {
+                          "emploiReglemente": false,
+                          "libelle": "Bûcheronnage et élagage",
+                          "domaineProfessionnel": {
+                            "libelle": "Production",
+                            "code": "A14",
+                            "grandDomaine": {
+                              "libelle": "Industrie",
+                              "code": "H"
+                            }
+                          },
+                          "code": "A1201",
+                          "emploiCadre": false,
+                          "riasecMineur": "R",
+                          "transitionNumerique": false,
+                          "riasecMajeur": "R",
+                          "label": "A1201",
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "codeIsco": "6210",
+                          "transitionEcologique": false,
+                          "transitionDemographique": false
+                        }
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Chef / Cheffe de station fruitière",
+                        "code": "12374"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/appellation/requete": {
+      "get": {
+        "tags": [
+          "Appellation"
+        ],
+        "summary": "Rechercher une appellation",
+        "description": "Permet de rechercher des appellations.\r\n\r\nCe service a pour vocation d'être utilisé dans le cas d'une autocomplétion.\r\n\r\nDe ce fait, on peut avoir une différence entre le nombre de résultats affichés (dans le tableau ***resultats***) et le nombre total de résultats disponibles (indiqué dans ***totalResultats***).\r\n\r\nAttention, le sélecteur de champs s'applique uniquement à l'attribut ***resultats*** de la réponse.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "rechercherAppellation",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Le(s) mot(s) et/ou début de mot(s) recherché(s).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "qf",
+            "in": "query",
+            "description": "Les indexe(s) de recherche (query fields). Si non précisé, on cherche sur le code et libellé.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fq",
+            "in": "query",
+            "description": "Les filtre(s) de recherche (filters query). Ex : fq=code:1 AND (code:2 OR libelle:app). Si non précisé, aucun filtre n'est appliqué.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "op",
+            "in": "query",
+            "description": "Lorsque plusieurs mots sont présents dans la recherche (q=mot1 mot2), indique si au moins 1 mot doit correspondre 'OR' ou s'ils doivent tous correspondre 'AND'. Si non précisé, 'OR' est utilisé",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code,metier(libelle,code)",
+              "enum": [
+                "appellationesco(libelle,uri)",
+                "classification",
+                "secondaire",
+                "code",
+                "emploicadre",
+                "emploireglemente",
+                "libelle",
+                "metier(code,libelle,riasecmineur,riasecmajeur)",
+                "transitiondemographique",
+                "transitionecologique",
+                "transitionecologiquedetaillee",
+                "transitionnumerique"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le résultat de la recherche d'appellations pour une autocomplétion.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "totalResultats": 123,
+                      "requete": "string",
+                      "resultats": [
+                        {
+                          "emploiReglemente": false,
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "appellationEsco": {
+                            "libelle": "string",
+                            "uri": "string"
+                          },
+                          "code": "12374",
+                          "emploiCadre": false,
+                          "transitionEcologique": false,
+                          "transitionNumerique": false,
+                          "transitionDemographique": false,
+                          "classification": "PRINCIPALE",
+                          "secondaire": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "totalResultats": 123,
+                      "requete": "string",
+                      "resultats": [
+                        {
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/appellation/{code}": {
+      "get": {
+        "tags": [
+          "Appellation"
+        ],
+        "summary": "Lire une appellation",
+        "description": "Permet de lire une appellation depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireAppellation",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code de l'appellation.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "emploireglemente,libelle,obsolete,code,emploicadre,transitionnumerique,classification,competencescles(frequence,competence(libelle,@macrosavoiretreprofessionnel(riasecmajeur,riasecmineur),@competencedetaillee(riasecmajeur,riasecmineur),code,@macrosavoirfaire(riasecmajeur,riasecmineur),codeogr)),transitionecologiquedetaillee,appellationesco(libelle,uri),transitionecologique,transitiondemographique,libellecourt,datefin,metier(emploireglemente,libelle,domaineprofessionnel(libelle,granddomaine(libelle,code),code),code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique)",
+              "enum": [
+                "appellationesco(libelle,uri)",
+                "appellationsenvisageables(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur))",
+                "appellationsproches(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur))",
+                "classification",
+                "code",
+                "competencescles(frequence,competence(libelle,@macrosavoiretreprofessionnel(riasecmineur,riasecmajeur),@competencedetaillee(riasecmineur,riasecmajeur),code,@macrosavoirfaire(riasecmineur,riasecmajeur),codeogr))",
+                "datefin",
+                "emploicadre",
+                "emploireglemente",
+                "libelle",
+                "libellecourt",
+                "metier(emploireglemente,libelle,domaineprofessionnel(libelle,code,granddomaine(libelle,code)),code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique)",
+                "metiersenvisageables(libelle,code,riasecmineur,riasecmajeur)",
+                "metiersproches(libelle,code,riasecmineur,riasecmajeur)",
+                "obsolete",
+                "romeparent",
+                "secondaire",
+                "transitiondemographique",
+                "transitionecologique",
+                "transitionecologiquedetaillee",
+                "transitionnumerique"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'une appellation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Appellation"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "emploiReglemente": false,
+                      "libelle": "Chef / Cheffe de station fruitière",
+                      "secondaire": false,
+                      "obsolete": false,
+                      "code": "12374",
+                      "emploiCadre": false,
+                      "transitionNumerique": false,
+                      "classification": "PRINCIPALE",
+                      "competencesCles": [
+                        {
+                          "frequence": 123,
+                          "competence": {
+                            "type": "string",
+                            "libelle": "Techniques de soudage",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R",
+                            "code": "100007",
+                            "codeOgr": "string"
+                          }
+                        }
+                      ],
+                      "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                      "appellationsEnvisageables": [
+                        {
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R"
+                          }
+                        }
+                      ],
+                      "appellationEsco": {
+                        "libelle": "string",
+                        "uri": "string"
+                      },
+                      "metiersProches": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ],
+                      "metiersEnvisageables": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ],
+                      "appellationsProches": [
+                        {
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R"
+                          }
+                        }
+                      ],
+                      "transitionEcologique": false,
+                      "transitionDemographique": false,
+                      "romeParent": "12374",
+                      "libelleCourt": "Chef de station fruitière",
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "metier": {
+                        "emploiReglemente": false,
+                        "libelle": "Bûcheronnage et élagage",
+                        "domaineProfessionnel": {
+                          "libelle": "Production",
+                          "code": "A14",
+                          "grandDomaine": {
+                            "libelle": "Industrie",
+                            "code": "H"
+                          }
+                        },
+                        "code": "A1201",
+                        "emploiCadre": false,
+                        "riasecMineur": "R",
+                        "transitionNumerique": false,
+                        "riasecMajeur": "R",
+                        "label": "A1201",
+                        "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                        "codeIsco": "6210",
+                        "transitionEcologique": false,
+                        "transitionDemographique": false
+                      }
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "emploiReglemente": false,
+                      "libelle": "Chef / Cheffe de station fruitière",
+                      "obsolete": false,
+                      "code": "12374",
+                      "emploiCadre": false,
+                      "transitionNumerique": false,
+                      "classification": "PRINCIPALE",
+                      "competencesCles": [
+                        {
+                          "frequence": 123,
+                          "competence": {
+                            "type": "string",
+                            "libelle": "Techniques de soudage",
+                            "riasecMajeur": "R",
+                            "riasecMineur": "R",
+                            "code": "100007",
+                            "codeOgr": "string"
+                          }
+                        }
+                      ],
+                      "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                      "appellationEsco": {
+                        "libelle": "string",
+                        "uri": "string"
+                      },
+                      "transitionEcologique": false,
+                      "transitionDemographique": false,
+                      "libelleCourt": "Chef de station fruitière",
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "metier": {
+                        "emploiReglemente": false,
+                        "libelle": "Bûcheronnage et élagage",
+                        "domaineProfessionnel": {
+                          "libelle": "Production",
+                          "grandDomaine": {
+                            "libelle": "Industrie",
+                            "code": "H"
+                          },
+                          "code": "A14"
+                        },
+                        "code": "A1201",
+                        "emploiCadre": false,
+                        "riasecMineur": "R",
+                        "transitionNumerique": false,
+                        "riasecMajeur": "R",
+                        "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                        "codeIsco": "6210",
+                        "transitionEcologique": false,
+                        "transitionDemographique": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/centre-interet": {
+      "get": {
+        "tags": [
+          "Centre d'intérêt"
+        ],
+        "summary": "Lister les centres d'intérêt",
+        "description": "Permet de lister les centres d'intérêt.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerCentreInterets",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "code",
+                "definition",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification))",
+                "metierslies(principal,metier(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent)))"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des centres d'intérêt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CentreInteret"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "libelle": "Je suis amateur / amatrice de sensations fortes",
+                        "code": "25",
+                        "definition": "string",
+                        "metiersLies": [
+                          {
+                            "principal": false,
+                            "metier": {
+                              "emploiReglemente": false,
+                              "libelle": "Bûcheronnage et élagage",
+                              "code": "A1201",
+                              "emploiCadre": false,
+                              "riasecMineur": "R",
+                              "transitionNumerique": false,
+                              "riasecMajeur": "R",
+                              "label": "A1201",
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "codeIsco": "6210",
+                              "transitionEcologique": false,
+                              "transitionDemographique": false,
+                              "appellations": [
+                                {
+                                  "emploiReglemente": false,
+                                  "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                  "libelle": "Chef / Cheffe de station fruitière",
+                                  "secondaire": false,
+                                  "code": "12374",
+                                  "emploiCadre": false,
+                                  "transitionEcologique": false,
+                                  "transitionNumerique": false,
+                                  "transitionDemographique": false,
+                                  "classification": "PRINCIPALE",
+                                  "romeParent": "12374"
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "metiers": [
+                          {
+                            "emploiReglemente": false,
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "emploiCadre": false,
+                            "riasecMineur": "R",
+                            "transitionNumerique": false,
+                            "riasecMajeur": "R",
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "codeIsco": "6210",
+                            "transitionEcologique": false,
+                            "transitionDemographique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Je suis amateur / amatrice de sensations fortes",
+                        "code": "25"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/centre-interet/{code}": {
+      "get": {
+        "tags": [
+          "Centre d'intérêt"
+        ],
+        "summary": "Lire un centre d'intérêt",
+        "description": "Permet de lire un centre d'intérêt depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireCentreInteret",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du centre d'intérêt.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,obsolete,code,definition,datefin",
+              "enum": [
+                "code",
+                "datefin",
+                "definition",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent))",
+                "metierslies(principal,metier(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification)))",
+                "obsolete"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un centre d'intérêt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CentreInteret"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "libelle": "Je suis amateur / amatrice de sensations fortes",
+                      "obsolete": false,
+                      "code": "25",
+                      "definition": "string",
+                      "metiersLies": [
+                        {
+                          "principal": false,
+                          "metier": {
+                            "emploiReglemente": false,
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "emploiCadre": false,
+                            "riasecMineur": "R",
+                            "transitionNumerique": false,
+                            "riasecMajeur": "R",
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "codeIsco": "6210",
+                            "transitionEcologique": false,
+                            "transitionDemographique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "metiers": [
+                        {
+                          "emploiReglemente": false,
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "emploiCadre": false,
+                          "riasecMineur": "R",
+                          "transitionNumerique": false,
+                          "riasecMajeur": "R",
+                          "label": "A1201",
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "codeIsco": "6210",
+                          "transitionEcologique": false,
+                          "transitionDemographique": false,
+                          "appellations": [
+                            {
+                              "emploiReglemente": false,
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "secondaire": false,
+                              "code": "12374",
+                              "emploiCadre": false,
+                              "transitionEcologique": false,
+                              "transitionNumerique": false,
+                              "transitionDemographique": false,
+                              "classification": "PRINCIPALE",
+                              "romeParent": "12374"
+                            }
+                          ]
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "libelle": "Je suis amateur / amatrice de sensations fortes",
+                      "obsolete": false,
+                      "code": "25",
+                      "definition": "string",
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/domaine-professionnel": {
+      "get": {
+        "tags": [
+          "Domaine professionnel"
+        ],
+        "summary": "Lister les domaines professionnels",
+        "description": "Permet de lister les domaines professionnels.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerDomainesProfessionnels",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "code",
+                "granddomaine(libelle,code)",
+                "libelle",
+                "metiers(label,transitionecologiquedetaillee,libelle,codeisco,code,riasecmineur,transitionecologique,transitionnumerique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent),riasecmajeur)"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des domaines professionnels",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DomaineProfessionnel"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "libelle": "Production",
+                        "code": "A14",
+                        "grandDomaine": {
+                          "libelle": "Industrie",
+                          "code": "H"
+                        },
+                        "metiers": [
+                          {
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "libelle": "Bûcheronnage et élagage",
+                            "codeIsco": "6210",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "transitionEcologique": false,
+                            "transitionNumerique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE",
+                                "romeParent": "12374"
+                              }
+                            ],
+                            "riasecMajeur": "R"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Production",
+                        "code": "A14"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/domaine-professionnel/{code}": {
+      "get": {
+        "tags": [
+          "Domaine professionnel"
+        ],
+        "summary": "Lire un domaine professionnel",
+        "description": "Permet de lire un domaine professionnel depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireDomaineProfessionnel",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du domaine professionnel.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,obsolete,code,granddomaine(libelle,code),datefin",
+              "enum": [
+                "code",
+                "datefin",
+                "granddomaine(libelle,code)",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent))",
+                "obsolete"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un domaine professionnel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DomaineProfessionnel"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "libelle": "Production",
+                      "obsolete": false,
+                      "code": "A14",
+                      "grandDomaine": {
+                        "libelle": "Industrie",
+                        "code": "H"
+                      },
+                      "metiers": [
+                        {
+                          "emploiReglemente": false,
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "emploiCadre": false,
+                          "riasecMineur": "R",
+                          "transitionNumerique": false,
+                          "riasecMajeur": "R",
+                          "label": "A1201",
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "codeIsco": "6210",
+                          "transitionEcologique": false,
+                          "transitionDemographique": false,
+                          "appellations": [
+                            {
+                              "emploiReglemente": false,
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "secondaire": false,
+                              "code": "12374",
+                              "emploiCadre": false,
+                              "transitionEcologique": false,
+                              "transitionNumerique": false,
+                              "transitionDemographique": false,
+                              "classification": "PRINCIPALE",
+                              "romeParent": "12374"
+                            }
+                          ]
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "libelle": "Production",
+                      "obsolete": false,
+                      "code": "A14",
+                      "grandDomaine": {
+                        "libelle": "Industrie",
+                        "code": "H"
+                      },
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/grand-domaine": {
+      "get": {
+        "tags": [
+          "Grand domaine"
+        ],
+        "summary": "Lister les grands domaines",
+        "description": "Permet de lister les grands domaines des métiers.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerGrandDomaines",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "code",
+                "domaineprofessionnels(libelle,code,metiers(label,transitionecologiquedetaillee,libelle,codeisco,code,riasecmineur,transitionecologique,transitionnumerique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent),riasecmajeur))",
+                "libelle"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des grands domaines",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GrandDomaine"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "libelle": "Industrie",
+                        "domaineProfessionnels": [
+                          {
+                            "libelle": "Production",
+                            "code": "A14",
+                            "metiers": [
+                              {
+                                "label": "A1201",
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Bûcheronnage et élagage",
+                                "codeIsco": "6210",
+                                "code": "A1201",
+                                "riasecMineur": "R",
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "appellations": [
+                                  {
+                                    "emploiReglemente": false,
+                                    "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                    "libelle": "Chef / Cheffe de station fruitière",
+                                    "secondaire": false,
+                                    "code": "12374",
+                                    "emploiCadre": false,
+                                    "transitionEcologique": false,
+                                    "transitionNumerique": false,
+                                    "transitionDemographique": false,
+                                    "classification": "PRINCIPALE",
+                                    "romeParent": "12374"
+                                  }
+                                ],
+                                "riasecMajeur": "R"
+                              }
+                            ]
+                          }
+                        ],
+                        "code": "H"
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Industrie",
+                        "code": "H"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/grand-domaine/{code}": {
+      "get": {
+        "tags": [
+          "Grand domaine"
+        ],
+        "summary": "Lire un grand domaine",
+        "description": "Permet de lire un grand domaine depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireGrandDomaine",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du grand domaine.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,obsolete,code,datefin",
+              "enum": [
+                "code",
+                "datefin",
+                "domaineprofessionnels(libelle,code,metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent)))",
+                "libelle",
+                "obsolete"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un grand domaine.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GrandDomaine"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "libelle": "Industrie",
+                      "domaineProfessionnels": [
+                        {
+                          "libelle": "Production",
+                          "code": "A14",
+                          "metiers": [
+                            {
+                              "emploiReglemente": false,
+                              "libelle": "Bûcheronnage et élagage",
+                              "code": "A1201",
+                              "emploiCadre": false,
+                              "riasecMineur": "R",
+                              "transitionNumerique": false,
+                              "riasecMajeur": "R",
+                              "label": "A1201",
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "codeIsco": "6210",
+                              "transitionEcologique": false,
+                              "transitionDemographique": false,
+                              "appellations": [
+                                {
+                                  "emploiReglemente": false,
+                                  "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                  "libelle": "Chef / Cheffe de station fruitière",
+                                  "secondaire": false,
+                                  "code": "12374",
+                                  "emploiCadre": false,
+                                  "transitionEcologique": false,
+                                  "transitionNumerique": false,
+                                  "transitionDemographique": false,
+                                  "classification": "PRINCIPALE",
+                                  "romeParent": "12374"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "obsolete": false,
+                      "code": "H",
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "libelle": "Industrie",
+                      "obsolete": false,
+                      "code": "H",
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/metier": {
+      "get": {
+        "tags": [
+          "Métier"
+        ],
+        "summary": "Lister les métiers",
+        "description": "Permet de lister les métiers.\r\n\r\nIl est possible de filtrer les métiers selon leur Riasec (majeur et/ou mineur), le code d'une des divisions NAF auquel il est rattaché ou encore selon la compétence mobilisée (principale, émergente ou autre) auquel il est lié.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerMetiers",
+        "parameters": [
+          {
+            "name": "riasec-majeur",
+            "in": "query",
+            "description": "Riasec majeur.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "riasec-mineur",
+            "in": "query",
+            "description": "Riasec mineur.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code-naf",
+            "in": "query",
+            "description": "Code de la division NAF.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code-competence",
+            "in": "query",
+            "description": "Code compétence.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "formacodes(libelle,code),libelle,code",
+              "enum": [
+                "accesemploi",
+                "appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent,libellecourt)",
+                "code",
+                "codeisco",
+                "definition",
+                "domaineprofessionnel(libelle,code,granddomaine(libelle,code))",
+                "emploicadre",
+                "emploireglemente",
+                "formacodes(libelle,code)",
+                "label",
+                "libelle",
+                "riasecmajeur",
+                "riasecmineur",
+                "transitiondemographique",
+                "transitionecologique",
+                "transitionecologiquedetaillee",
+                "transitionnumerique"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des métiers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Metier"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "emploiReglemente": false,
+                        "formacodes": [
+                          {
+                            "libelle": "culture algue",
+                            "code": "21317"
+                          }
+                        ],
+                        "libelle": "Bûcheronnage et élagage",
+                        "domaineProfessionnel": {
+                          "libelle": "Production",
+                          "code": "A14",
+                          "grandDomaine": {
+                            "libelle": "Industrie",
+                            "code": "H"
+                          }
+                        },
+                        "code": "A1201",
+                        "emploiCadre": false,
+                        "definition": "Réalise des opérations de coupe et d'entretien d'arbres",
+                        "riasecMineur": "R",
+                        "transitionNumerique": false,
+                        "riasecMajeur": "R",
+                        "label": "A1201",
+                        "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                        "codeIsco": "6210",
+                        "transitionEcologique": false,
+                        "transitionDemographique": false,
+                        "appellations": [
+                          {
+                            "emploiReglemente": false,
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "libelle": "Chef / Cheffe de station fruitière",
+                            "secondaire": false,
+                            "code": "12374",
+                            "emploiCadre": false,
+                            "transitionEcologique": false,
+                            "transitionNumerique": false,
+                            "transitionDemographique": false,
+                            "classification": "PRINCIPALE",
+                            "romeParent": "12374",
+                            "libelleCourt": "Chef de station fruitière"
+                          }
+                        ],
+                        "accesEmploi": "Ce métier est accessible avec un CAP/BEP Agricole en travaux forestiers et bûcheronnage."
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "formacodes": [
+                          {
+                            "libelle": "culture algue",
+                            "code": "21317"
+                          }
+                        ],
+                        "libelle": "Bûcheronnage et élagage",
+                        "code": "A1201"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/metier/requete": {
+      "get": {
+        "tags": [
+          "Métier"
+        ],
+        "summary": "Rechercher un métier",
+        "description": "Permet de rechercher des métiers.\r\n\r\n\nCe service a pour vocation d'être utilisé dans le cas d'une autocomplétion.\r\n\r\n\nDe ce fait, on peut avoir une différence entre le nombre de résultats affichés (dans le tableau ***resultats***) et le nombre total de résultats disponibles (indiqué dans ***totalResultats***).\r\n\r\n\nAttention, le sélecteur de champs s'applique uniquement à l'attribut ***resultats*** de la réponse.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple pour voir les données retournées)",
+        "operationId": "recherchermetier",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Le(s) mot(s) et/ou début de mot(s) recherché(s).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "qf",
+            "in": "query",
+            "description": "Les indexe(s) de recherche (query fields). Si non précisé, on cherche sur le code et libellé.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fq",
+            "in": "query",
+            "description": "Les filtre(s) de recherche (filters query). Ex : fq=code:1 AND (code:2 OR libelle:app). Si non précisé, aucun filtre n'est appliqué.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "op",
+            "in": "query",
+            "description": "Lorsque plusieurs mots sont présents dans la recherche (q=mot1 mot2), indique si au moins 1 mot doit correspondre 'OR' ou s'ils doivent tous correspondre 'AND'. Si non précisé, 'OR' est utilisé",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider de l'exemple de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "riasecmineur,riasecmajeur,libelle,code",
+              "enum": [
+                "code",
+                "libelle",
+                "riasecmineur",
+                "riasecmajeur"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Le résultat de la recherche de métiers pour une autocomplétion.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "Retour du service": {
+                    "value": {
+                      "totalResultats": 123,
+                      "requete": "string",
+                      "resultats": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/metier/{code}": {
+      "get": {
+        "tags": [
+          "Métier"
+        ],
+        "summary": "Lire un métier",
+        "description": "Permet de lire un métier depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireMetier",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du métier.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "emploireglemente,formacodes(libelle,code),libelle,domaineprofessionnel(libelle,granddomaine(libelle,code),code),obsolete,code,definition,secteursactiviteslies(secteuractivite(libelle,code,secteuractivite(libelle,code)),principal),divisionsnaf(libelle,code),riasecmajeur,transitionecologiquedetaillee,themes(libelle,code),transitionecologique,datefin,competencesmobiliseesprincipales(libelle,@macrosavoiretreprofessionnel(riasecmajeur,riasecmineur),@competencedetaillee(riasecmajeur,riasecmineur),code,@macrosavoirfaire(riasecmajeur,riasecmineur),codeogr),emploicadre,riasecmineur,transitionnumerique,contextestravail(libelle,code,categorie),codeisco,centresinterets(libelle,code),competencesmobilisees(libelle,@macrosavoiretreprofessionnel(riasecmajeur,riasecmineur),@competencedetaillee(riasecmajeur,riasecmineur),code,@macrosavoirfaire(riasecmajeur,riasecmineur),codeogr),transitiondemographique,secteursactivites(libelle,code,secteuractivite(libelle,code)),appellations(emploireglemente,transitionecologiquedetaillee,libelle,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,libellecourt,competencescles(frequence,competence(libelle,codeogr,code))),competencesmobiliseesemergentes(libelle,@macrosavoiretreprofessionnel(riasecmajeur,riasecmineur),@competencedetaillee(riasecmajeur,riasecmineur),code,@macrosavoirfaire(riasecmajeur,riasecmineur),codeogr),centresinteretslies(centreinteret(libelle,code),principal),accesemploi",
+              "enum": [
+                "accesemploi",
+                "appellations(emploireglemente,libelle,secondaire,code,emploicadre,transitionnumerique,classification,competencescles(frequence,competence(libelle,code,codeogr)),transitionecologiquedetaillee,appellationsenvisageables(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur)),metiersproches(libelle,code,riasecmineur,riasecmajeur),metiersenvisageables(libelle,code,riasecmineur,riasecmajeur),appellationsproches(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur)),transitionecologique,transitiondemographique,romeparent,libellecourt)",
+                "appellationsenvisageables(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur))",
+                "appellationsproches(libelle,code,metier(libelle,code,riasecmineur,riasecmajeur))",
+                "centresinterets(libelle,code,definition)",
+                "centresinteretslies(centreinteret(libelle,code,definition),principal)",
+                "code",
+                "codeisco",
+                "competencesmobilisees(libelle,@macrosavoiretreprofessionnel(riasecmineur,riasecmajeur),@competencedetaillee(riasecmineur,riasecmajeur),code,@macrosavoirfaire(riasecmineur,riasecmajeur),codeogr)",
+                "competencesmobiliseesemergentes(libelle,@macrosavoiretreprofessionnel(riasecmineur,riasecmajeur),@competencedetaillee(riasecmineur,riasecmajeur),code,@macrosavoirfaire(riasecmineur,riasecmajeur),codeogr)",
+                "competencesmobiliseesprincipales(libelle,@macrosavoiretreprofessionnel(riasecmineur,riasecmajeur),@competencedetaillee(riasecmineur,riasecmajeur),code,@macrosavoirfaire(riasecmineur,riasecmajeur),codeogr)",
+                "contextestravail(libelle,code,categorie)",
+                "datefin",
+                "definition",
+                "divisionsnaf(libelle,code)",
+                "domaineprofessionnel(libelle,code,granddomaine(libelle,code))",
+                "emploicadre",
+                "emploireglemente",
+                "formacodes(libelle,code)",
+                "label",
+                "libelle",
+                "metiersenproximite(libelle,code,riasecmineur,riasecmajeur)",
+                "metiersenvisageables(libelle,code,riasecmineur,riasecmajeur)",
+                "metiersproches(libelle,code,riasecmineur,riasecmajeur)",
+                "obsolete",
+                "riasecmajeur",
+                "riasecmineur",
+                "secteursactivites(libelle,code,secteuractivite(libelle,code,definition),definition)",
+                "secteursactiviteslies(secteuractivite(libelle,code,secteuractivite(libelle,code,definition),definition),principal)",
+                "themes(libelle,code)",
+                "transitiondemographique",
+                "transitionecologique",
+                "transitionecologiquedetaillee",
+                "transitionnumerique"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un métier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Metier"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "emploiReglemente": false,
+                      "formacodes": [
+                        {
+                          "libelle": "culture algue",
+                          "code": "21317"
+                        }
+                      ],
+                      "libelle": "Bûcheronnage et élagage",
+                      "domaineProfessionnel": {
+                        "libelle": "Production",
+                        "code": "A14",
+                        "grandDomaine": {
+                          "libelle": "Industrie",
+                          "code": "H"
+                        }
+                      },
+                      "obsolete": false,
+                      "code": "A1201",
+                      "definition": "Réalise des opérations de coupe et d'entretien d'arbres",
+                      "secteursActivitesLies": [
+                        {
+                          "secteurActivite": {
+                            "libelle": "Agriculture et élevage",
+                            "code": "79",
+                            "secteurActivite": {
+                              "libelle": "Agriculture et élevage",
+                              "code": "79",
+                              "definition": "string"
+                            },
+                            "definition": "string"
+                          },
+                          "principal": false
+                        }
+                      ],
+                      "divisionsNaf": [
+                        {
+                          "libelle": "Métallurgie",
+                          "code": "24"
+                        }
+                      ],
+                      "riasecMajeur": "R",
+                      "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                      "themes": [
+                        {
+                          "libelle": "Métiers auprès des enfants",
+                          "code": "12"
+                        }
+                      ],
+                      "appellationsEnvisageables": [
+                        {
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R"
+                          }
+                        }
+                      ],
+                      "metiersEnvisageables": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ],
+                      "transitionEcologique": false,
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "competencesMobiliseesPrincipales": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "emploiCadre": false,
+                      "riasecMineur": "R",
+                      "transitionNumerique": false,
+                      "contextesTravail": [
+                        {
+                          "libelle": "En club sportif",
+                          "code": "403091",
+                          "categorie": "CONDITIONS_TRAVAIL"
+                        }
+                      ],
+                      "label": "A1201",
+                      "codeIsco": "6210",
+                      "metiersProches": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ],
+                      "centresInterets": [
+                        {
+                          "libelle": "Je suis amateur / amatrice de sensations fortes",
+                          "code": "25",
+                          "definition": "string"
+                        }
+                      ],
+                      "competencesMobilisees": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "appellationsProches": [
+                        {
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "metier": {
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "riasecMajeur": "R"
+                          }
+                        }
+                      ],
+                      "transitionDemographique": false,
+                      "secteursActivites": [
+                        {
+                          "libelle": "Agriculture et élevage",
+                          "code": "79",
+                          "secteurActivite": {
+                            "libelle": "Agriculture et élevage",
+                            "code": "79",
+                            "definition": "string"
+                          },
+                          "definition": "string"
+                        }
+                      ],
+                      "metiersEnProximite": [
+                        {
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R"
+                        }
+                      ],
+                      "appellations": [
+                        {
+                          "emploiReglemente": false,
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "secondaire": false,
+                          "code": "12374",
+                          "emploiCadre": false,
+                          "transitionNumerique": false,
+                          "classification": "PRINCIPALE",
+                          "competencesCles": [
+                            {
+                              "frequence": 123,
+                              "competence": {
+                                "type": "string",
+                                "libelle": "Techniques de soudage",
+                                "code": "100007",
+                                "codeOgr": "string"
+                              }
+                            }
+                          ],
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "appellationsEnvisageables": [
+                            {
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "code": "12374",
+                              "metier": {
+                                "libelle": "Bûcheronnage et élagage",
+                                "code": "A1201",
+                                "riasecMineur": "R",
+                                "riasecMajeur": "R"
+                              }
+                            }
+                          ],
+                          "metiersProches": [
+                            {
+                              "libelle": "Bûcheronnage et élagage",
+                              "code": "A1201",
+                              "riasecMineur": "R",
+                              "riasecMajeur": "R"
+                            }
+                          ],
+                          "metiersEnvisageables": [
+                            {
+                              "libelle": "Bûcheronnage et élagage",
+                              "code": "A1201",
+                              "riasecMineur": "R",
+                              "riasecMajeur": "R"
+                            }
+                          ],
+                          "appellationsProches": [
+                            {
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "code": "12374",
+                              "metier": {
+                                "libelle": "Bûcheronnage et élagage",
+                                "code": "A1201",
+                                "riasecMineur": "R",
+                                "riasecMajeur": "R"
+                              }
+                            }
+                          ],
+                          "transitionEcologique": false,
+                          "transitionDemographique": false,
+                          "romeParent": "12374",
+                          "libelleCourt": "Chef de station fruitière"
+                        }
+                      ],
+                      "competencesMobiliseesEmergentes": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMineur": "R",
+                          "riasecMajeur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "centresInteretsLies": [
+                        {
+                          "centreInteret": {
+                            "libelle": "Je suis amateur / amatrice de sensations fortes",
+                            "code": "25",
+                            "definition": "string"
+                          },
+                          "principal": false
+                        }
+                      ],
+                      "accesEmploi": "Ce métier est accessible avec un CAP/BEP Agricole en travaux forestiers et bûcheronnage."
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "emploiReglemente": false,
+                      "formacodes": [
+                        {
+                          "libelle": "culture algue",
+                          "code": "21317"
+                        }
+                      ],
+                      "libelle": "Bûcheronnage et élagage",
+                      "domaineProfessionnel": {
+                        "libelle": "Production",
+                        "grandDomaine": {
+                          "libelle": "Industrie",
+                          "code": "H"
+                        },
+                        "code": "A14"
+                      },
+                      "obsolete": false,
+                      "code": "A1201",
+                      "definition": "Réalise des opérations de coupe et d'entretien d'arbres",
+                      "secteursActivitesLies": [
+                        {
+                          "secteurActivite": {
+                            "libelle": "Agriculture et élevage",
+                            "code": "79",
+                            "secteurActivite": {
+                              "libelle": "Agriculture et élevage",
+                              "code": "79"
+                            }
+                          },
+                          "principal": false
+                        }
+                      ],
+                      "divisionsNaf": [
+                        {
+                          "libelle": "Métallurgie",
+                          "code": "24"
+                        }
+                      ],
+                      "riasecMajeur": "R",
+                      "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                      "themes": [
+                        {
+                          "libelle": "Métiers auprès des enfants",
+                          "code": "12"
+                        }
+                      ],
+                      "transitionEcologique": false,
+                      "dateFin": "2024-02-23T14:40:14.848Z",
+                      "competencesMobiliseesPrincipales": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMajeur": "R",
+                          "riasecMineur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "emploiCadre": false,
+                      "riasecMineur": "R",
+                      "transitionNumerique": false,
+                      "contextesTravail": [
+                        {
+                          "libelle": "En club sportif",
+                          "code": "403091",
+                          "categorie": "CONDITIONS_TRAVAIL"
+                        }
+                      ],
+                      "codeIsco": "6210",
+                      "centresInterets": [
+                        {
+                          "libelle": "Je suis amateur / amatrice de sensations fortes",
+                          "code": "25"
+                        }
+                      ],
+                      "competencesMobilisees": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMajeur": "R",
+                          "riasecMineur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "transitionDemographique": false,
+                      "secteursActivites": [
+                        {
+                          "libelle": "Agriculture et élevage",
+                          "code": "79",
+                          "secteurActivite": {
+                            "libelle": "Agriculture et élevage",
+                            "code": "79"
+                          }
+                        }
+                      ],
+                      "appellations": [
+                        {
+                          "emploiReglemente": false,
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "libelle": "Chef / Cheffe de station fruitière",
+                          "code": "12374",
+                          "emploiCadre": false,
+                          "transitionEcologique": false,
+                          "transitionNumerique": false,
+                          "transitionDemographique": false,
+                          "classification": "PRINCIPALE",
+                          "libelleCourt": "Chef de station fruitière",
+                          "competencesCles": [
+                            {
+                              "frequence": 123,
+                              "competence": {
+                                "type": "string",
+                                "libelle": "Techniques de soudage",
+                                "codeOgr": "string",
+                                "code": "100007"
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      "competencesMobiliseesEmergentes": [
+                        {
+                          "type": "string",
+                          "libelle": "Techniques de soudage",
+                          "riasecMajeur": "R",
+                          "riasecMineur": "R",
+                          "code": "100007",
+                          "codeOgr": "string"
+                        }
+                      ],
+                      "centresInteretsLies": [
+                        {
+                          "centreInteret": {
+                            "libelle": "Je suis amateur / amatrice de sensations fortes",
+                            "code": "25"
+                          },
+                          "principal": false
+                        }
+                      ],
+                      "accesEmploi": "Ce métier est accessible avec un CAP/BEP Agricole en travaux forestiers et bûcheronnage."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/secteur-activite": {
+      "get": {
+        "tags": [
+          "Secteur d'activités"
+        ],
+        "summary": "Lister les secteurs d'activités",
+        "description": "Permet de lister les secteurs d'activités des métiers.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerSecteurActivites",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "code",
+                "definition",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeParent))",
+                "metierslies(principal,metier(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent)))",
+                "secteuractivite(libelle,code,definition)",
+                "soussecteurs(libelle,code,definition)"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des secteurs d'activités.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SecteurActivite"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "libelle": "Agriculture et élevage",
+                        "code": "79",
+                        "secteurActivite": {
+                          "libelle": "Agriculture et élevage",
+                          "code": "79",
+                          "definition": "string"
+                        },
+                        "definition": "string",
+                        "metiersLies": [
+                          {
+                            "principal": false,
+                            "metier": {
+                              "emploiReglemente": false,
+                              "libelle": "Bûcheronnage et élagage",
+                              "code": "A1201",
+                              "emploiCadre": false,
+                              "riasecMineur": "R",
+                              "transitionNumerique": false,
+                              "riasecMajeur": "R",
+                              "label": "A1201",
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "codeIsco": "6210",
+                              "transitionEcologique": false,
+                              "transitionDemographique": false,
+                              "appellations": [
+                                {
+                                  "emploiReglemente": false,
+                                  "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                  "libelle": "Chef / Cheffe de station fruitière",
+                                  "secondaire": false,
+                                  "code": "12374",
+                                  "emploiCadre": false,
+                                  "transitionEcologique": false,
+                                  "transitionNumerique": false,
+                                  "transitionDemographique": false,
+                                  "classification": "PRINCIPALE",
+                                  "romeParent": "12374"
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "sousSecteurs": [
+                          {
+                            "libelle": "Agriculture et élevage",
+                            "code": "79",
+                            "definition": "string"
+                          }
+                        ],
+                        "metiers": [
+                          {
+                            "emploiReglemente": false,
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "emploiCadre": false,
+                            "riasecMineur": "R",
+                            "transitionNumerique": false,
+                            "riasecMajeur": "R",
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "codeIsco": "6210",
+                            "transitionEcologique": false,
+                            "transitionDemographique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE",
+                                "romeParent": "12374"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Agriculture et élevage",
+                        "code": "79"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/secteur-activite/{code}": {
+      "get": {
+        "tags": [
+          "Secteur d'activités"
+        ],
+        "summary": "Lire un secteur d'activités",
+        "description": "Permet de lire un secteur d'activités depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireSecteurActivite",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du secteur d'activités.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,obsolete,code,secteuractivite(libelle,code,definition),definition,datefin",
+              "enum": [
+                "code",
+                "datefin",
+                "definition",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent))",
+                "metierslies(principal,metier(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent)))",
+                "obsolete",
+                "secteuractivite(libelle,code,definition)",
+                "soussecteurs(libelle,code,definition)"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un secteur d'activités.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecteurActivite"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "libelle": "Agriculture et élevage",
+                      "obsolete": false,
+                      "code": "79",
+                      "secteurActivite": {
+                        "libelle": "Agriculture et élevage",
+                        "code": "79",
+                        "definition": "string"
+                      },
+                      "definition": "string",
+                      "metiersLies": [
+                        {
+                          "principal": false,
+                          "metier": {
+                            "emploiReglemente": false,
+                            "libelle": "Bûcheronnage et élagage",
+                            "code": "A1201",
+                            "emploiCadre": false,
+                            "riasecMineur": "R",
+                            "transitionNumerique": false,
+                            "riasecMajeur": "R",
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "codeIsco": "6210",
+                            "transitionEcologique": false,
+                            "transitionDemographique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE",
+                                "romeParent": "12374"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "sousSecteurs": [
+                        {
+                          "libelle": "Agriculture et élevage",
+                          "code": "79",
+                          "definition": "string"
+                        }
+                      ],
+                      "metiers": [
+                        {
+                          "emploiReglemente": false,
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "emploiCadre": false,
+                          "riasecMineur": "R",
+                          "transitionNumerique": false,
+                          "riasecMajeur": "R",
+                          "label": "A1201",
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "codeIsco": "6210",
+                          "transitionEcologique": false,
+                          "transitionDemographique": false,
+                          "appellations": [
+                            {
+                              "emploiReglemente": false,
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "secondaire": false,
+                              "code": "12374",
+                              "emploiCadre": false,
+                              "transitionEcologique": false,
+                              "transitionNumerique": false,
+                              "transitionDemographique": false,
+                              "classification": "PRINCIPALE",
+                              "romeParent": "12374"
+                            }
+                          ]
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "libelle": "Agriculture et élevage",
+                      "obsolete": false,
+                      "code": "79",
+                      "secteurActivite": {
+                        "libelle": "Agriculture et élevage",
+                        "code": "79",
+                        "definition": "string"
+                      },
+                      "definition": "string",
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/theme": {
+      "get": {
+        "tags": [
+          "Thème"
+        ],
+        "summary": "Lister les thèmes",
+        "description": "Permet de lister les thèmes des métiers.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "listerThemes",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,code",
+              "enum": [
+                "code",
+                "definition",
+                "libelle",
+                "metiers(label,transitionecologiquedetaillee,libelle,codeisco,code,riasecmineur,transitionecologique,transitionnumerique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent),riasecmajeur)"
+              ]
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne la liste des thèmes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Theme"
+                  }
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": [
+                      {
+                        "libelle": "Métiers auprès des enfants",
+                        "code": "12",
+                        "definition": "Métiers liés à l'éducation, l'enseignement, l'animation, aux loisirs et aux soins des enfants ",
+                        "metiers": [
+                          {
+                            "label": "A1201",
+                            "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                            "libelle": "Bûcheronnage et élagage",
+                            "codeIsco": "6210",
+                            "code": "A1201",
+                            "riasecMineur": "R",
+                            "transitionEcologique": false,
+                            "transitionNumerique": false,
+                            "appellations": [
+                              {
+                                "emploiReglemente": false,
+                                "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                                "libelle": "Chef / Cheffe de station fruitière",
+                                "secondaire": false,
+                                "code": "12374",
+                                "emploiCadre": false,
+                                "transitionEcologique": false,
+                                "transitionNumerique": false,
+                                "transitionDemographique": false,
+                                "classification": "PRINCIPALE",
+                                "romeParent": "12374"
+                              }
+                            ],
+                            "riasecMajeur": "R"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "Retour par défaut": {
+                    "value": [
+                      {
+                        "libelle": "Métiers auprès des enfants",
+                        "code": "12"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/theme/{code}": {
+      "get": {
+        "tags": [
+          "Thème"
+        ],
+        "summary": "Lire un thème",
+        "description": "Permet de lire un thème depuis son code.\r\n\r\nSi vous renseignez une ou plusieurs valeurs dans \"champs\", alors vous obtiendrez le résultat pour ces champs.\r\n\r\nSi vous ne renseignez aucune valeur dans \"champs\", alors vous obtiendrez le résultat par défaut. (Sélectionner l'exemple \"***Par défaut***\" pour voir les données retournées)",
+        "operationId": "lireTheme",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "description": "Code du thème.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "libelle,obsolete,code,definition,datefin",
+              "enum": [
+                "code",
+                "datefin",
+                "definition",
+                "libelle",
+                "metiers(emploireglemente,libelle,code,emploicadre,riasecmineur,transitionnumerique,riasecmajeur,label,transitionecologiquedetaillee,codeisco,transitionecologique,transitiondemographique,appellations(emploireglemente,transitionecologiquedetaillee,libelle,secondaire,code,emploicadre,transitionecologique,transitionnumerique,transitiondemographique,classification,romeparent))",
+                "obsolete"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date de la recherche au format yyyy-MM-dd ou yyyyMMdd.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2022-05-28"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retourne les données d'un thème.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Theme"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "libelle": "Métiers auprès des enfants",
+                      "obsolete": false,
+                      "code": "12",
+                      "definition": "Métiers liés à l'éducation, l'enseignement, l'animation, aux loisirs et aux soins des enfants ",
+                      "metiers": [
+                        {
+                          "emploiReglemente": false,
+                          "libelle": "Bûcheronnage et élagage",
+                          "code": "A1201",
+                          "emploiCadre": false,
+                          "riasecMineur": "R",
+                          "transitionNumerique": false,
+                          "riasecMajeur": "R",
+                          "label": "A1201",
+                          "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                          "codeIsco": "6210",
+                          "transitionEcologique": false,
+                          "transitionDemographique": false,
+                          "appellations": [
+                            {
+                              "emploiReglemente": false,
+                              "transitionEcologiqueDetaillee": "EMPLOI_STRATEGIQUE",
+                              "libelle": "Chef / Cheffe de station fruitière",
+                              "secondaire": false,
+                              "code": "12374",
+                              "emploiCadre": false,
+                              "transitionEcologique": false,
+                              "transitionNumerique": false,
+                              "transitionDemographique": false,
+                              "classification": "PRINCIPALE",
+                              "romeParent": "12374"
+                            }
+                          ]
+                        }
+                      ],
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "libelle": "Métiers auprès des enfants",
+                      "obsolete": false,
+                      "code": "12",
+                      "definition": "Métiers liés à l'éducation, l'enseignement, l'animation, aux loisirs et aux soins des enfants ",
+                      "dateFin": "2024-02-23T14:40:14.848Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "service": "/v1/mon_uri",
+                      "message": "Code inexistant: monCode",
+                      "code": 404
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers"
+          }
+        ]
+      }
+    },
+    "/v1/metiers/version": {
+      "get": {
+        "tags": [
+          "Versionning du ROME"
+        ],
+        "summary": "Récupérer la version actuelle du ROME",
+        "description": "Récupère la version actuelle du ROME.",
+        "operationId": "lireVersion",
+        "parameters": [
+          {
+            "name": "champs",
+            "in": "query",
+            "description": "Sélecteur de champs : il est possible de paramétrer le retour de la requête en définissant les champs souhaités (liste exhaustive des champs possibles : `Allowed values`). <br/> Vous pouvez vous aider des exemples de réponse pour identifier les champs que vous voulez récupérer.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "version",
+                "lastModifiedDate",
+                "version,lastModifiedDate"
+              ],
+              "example": "version,lastModifiedDate"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Bearer "
+            },
+            "description": "Token d'authentification Bearer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionRome"
+                },
+                "examples": {
+                  "Retour complet": {
+                    "value": {
+                      "version": "19",
+                      "lastModifiedDate": "2025-05-22T12:04:43.281Z"
+                    }
+                  },
+                  "Retour par défaut": {
+                    "value": {
+                      "version": "19",
+                      "lastModifiedDate": "2025-05-22T12:04:43.281Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request : peut-être causé par un sélecteur de champs incorrect",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {
+                      "message": "L'attribut 'monAttribut' n'est pas selectionnable",
+                      "codeMetier": "SELECTOR",
+                      "service": "/v1/mon_uri",
+                      "code": 400
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "authentification_partenaire": [
+              "nomenclatureRome",
+              "api_rome-metiersv1"
+            ]
+          }
+        ],
+        "servers": [
+          {
+            "url": "https://api.francetravail.io/partenaire/rome-metiers",
+            "description": "PROD"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Appellation": {
+        "type": "object",
+        "properties": {
+          "appellationEsco": {
+            "$ref": "#/components/schemas/AppellationEsco"
+          },
+          "appellationsEnvisageables": {
+            "type": "array",
+            "description": "Liste des appellations envisageable. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Appellation"
+            }
+          },
+          "appellationsProches": {
+            "type": "array",
+            "description": "Liste des appellations proches. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Appellation"
+            }
+          },
+          "classification": {
+            "type": "string",
+            "description": "Classification.",
+            "enum": [
+              "PRINCIPALE",
+              "SYNONYME"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Code unique de l'appellation.",
+            "example": "12374"
+          },
+          "competencesCles": {
+            "type": "array",
+            "description": "Liste des Compétences clés rattachées.",
+            "items": {
+              "$ref": "#/components/schemas/CompetenceCle"
+            }
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "emploiCadre": {
+            "type": "boolean",
+            "description": "Emploi cadre: oui/non. Ce champ est optionnel."
+          },
+          "emploiReglemente": {
+            "type": "boolean",
+            "description": "Emploi règlementé: oui/non. Ce champ est optionnel."
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de l'appellation.",
+            "example": "Chef / Cheffe de station fruitière"
+          },
+          "libelleCourt": {
+            "type": "string",
+            "description": "Libellé court de l'appellation. Ce champ est optionnel.",
+            "example": "Chef de station fruitière"
+          },
+          "metier": {
+            "$ref": "#/components/schemas/Metier"
+          },
+          "metiersEnvisageables": {
+            "type": "array",
+            "description": "Liste des métiers envisageables. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "metiersProches": {
+            "type": "array",
+            "description": "Liste des métiers proches. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          },
+          "romeParent": {
+            "type": "string",
+            "description": "Code rome du métier parent.",
+            "example": "12374"
+          },
+          "secondaire": {
+            "type": "boolean",
+            "description": "Appellation secondaire: oui/non. Ce champ est optionnel."
+          },
+          "transitionDemographique": {
+            "type": "boolean",
+            "description": "Transition démographique: oui/non. Ce champ est optionnel."
+          },
+          "transitionEcologique": {
+            "type": "boolean",
+            "description": "Transition écologique: oui/non. Ce champ est optionnel."
+          },
+          "transitionEcologiqueDetaillee": {
+            "type": "string",
+            "description": "Transition écologique détaillée. Ce champ est optionnel.",
+            "enum": [
+              "EMPLOI_STRATEGIQUE",
+              "EMPLOI_VERT",
+              "EMPLOI_BLANC",
+              "EMPLOI_BRUN"
+            ]
+          },
+          "transitionNumerique": {
+            "type": "boolean",
+            "description": "Transition numérique: oui/non. Ce champ est optionnel."
+          }
+        },
+        "description": "Appellation"
+      },
+      "AppellationEsco": {
+        "type": "object",
+        "properties": {
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de l'appellation ESCO."
+          },
+          "uri": {
+            "type": "string",
+            "description": "Uri unique de l'appellation ESCO."
+          }
+        },
+        "description": "Appellation ESCO (en provenance du référentiel 'ESCO')"
+      },
+      "CentreInteret": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du centre d'intérêt.",
+            "example": "25"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "definition": {
+            "type": "string",
+            "description": "Définition du centre d'intérêt. Ce champs est optionnel."
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du centre d'intérêts.",
+            "example": "Je suis amateur / amatrice de sensations fortes"
+          },
+          "metiers": {
+            "type": "array",
+            "description": "Liste des métiers liés. Cet attribut est déprécié, utiliser l'attribut metiersLies",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "metiersLies": {
+            "type": "array",
+            "description": "Liste des métiers liés.",
+            "items": {
+              "$ref": "#/components/schemas/LiaisonEntreMetierEtCentreInteret"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          }
+        },
+        "description": "Centre d'intérêts"
+      },
+      "Competence": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la compétence.",
+            "example": "100007"
+          },
+          "codeOgr": {
+            "type": "string",
+            "description": "Code OGR. Cet attribut est déprécié et n'est plus présent que pour des raisons de rétro-compatibilités",
+            "deprecated": true
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de la compétence.",
+            "example": "Techniques de soudage"
+          },
+          "type": {
+            "type": "string",
+            "description": "Le type de l'objet. Il y a quatre valeurs possibles :\n<ul>\n<li>'MACRO-SAVOIR-FAIRE' pour un macro-savoir-faire</li>\n<li>'MACRO-SAVOIR-ETRE-PROFESSIONNEL' pour un macro-savoir-être professionnel</li>\n<li>'COMPETENCE-DETAILLEE' pour un compétence détaillée</li>\n<li>'SAVOIR' pour un savoir</li>\n</ul>\n"
+          }
+        },
+        "description": "Compétence (en provenance du référentiel 'Compétences'). Cette entité se décompose en quatre catégories : les macro-savoir-faires, les macro-savoir-êtres professionnels, les compétences détaillées et enfin les savoirs.",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "CompetenceCle": {
+        "type": "object",
+        "properties": {
+          "competence": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CompetenceDetaillee"
+              },
+              {
+                "$ref": "#/components/schemas/MacroSavoirEtreProfessionnel"
+              },
+              {
+                "$ref": "#/components/schemas/MacroSavoirFaire"
+              },
+              {
+                "$ref": "#/components/schemas/Savoir"
+              }
+            ]
+          },
+          "frequence": {
+            "type": "integer",
+            "description": "Fréquence (entre 0 inclus et 100 inclus).",
+            "format": "int32"
+          }
+        },
+        "description": "Compétence clé"
+      },
+      "CompetenceDetaillee": {
+        "type": "object",
+        "description": "Compétence détaillée (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "riasecMajeur": {
+                "type": "string",
+                "description": "Riasec Majeur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "riasecMineur": {
+                "type": "string",
+                "description": "Riasec Mineur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'COMPETENCE-DETAILLEE'."
+              }
+            }
+          }
+        ]
+      },
+      "ContexteTravail": {
+        "type": "object",
+        "properties": {
+          "categorie": {
+            "type": "string",
+            "description": "Catégorie de contexte de travail.",
+            "enum": [
+              "CONDITIONS_TRAVAIL",
+              "TYPE_BENEFICIAIRE",
+              "LIEU_ET_DEPLACEMENT",
+              "HORAIRE_ET_DUREE_TRAVAIL",
+              "TYPE_STRUCTURE_ACCUEIL",
+              "STATUT_EMPLOI"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Code unique du contexte de travail.",
+            "example": "403091"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du contexte de travail.",
+            "example": "En club sportif"
+          }
+        },
+        "description": "Contexte de travail (en provenance du référentiel 'Situations de travail')"
+      },
+      "DivisionNaf": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique de la division NAF.",
+            "example": "24"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé de la division NAF.",
+            "example": "Métallurgie"
+          }
+        },
+        "description": "Division NAF (en provenance du référentiel 'NAF')"
+      },
+      "DomaineProfessionnel": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du domaine professionnel.",
+            "example": "A14"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "grandDomaine": {
+            "$ref": "#/components/schemas/GrandDomaine"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du domaine professionnel.",
+            "example": "Production"
+          },
+          "metiers": {
+            "type": "array",
+            "description": "Liste des métiers rattachés.",
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          }
+        },
+        "description": "Domaine professionnel"
+      },
+      "Formacode": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du formacode V14.",
+            "example": "21317"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du formacode.",
+            "example": "culture algue"
+          }
+        },
+        "description": "Formacode (en provenance du référentiel 'FORMACODES V14')"
+      },
+      "GrandDomaine": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du grand domaine.",
+            "example": "H"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "domaineProfessionnels": {
+            "type": "array",
+            "description": "Liste des domaines professionnels rattachés.",
+            "items": {
+              "$ref": "#/components/schemas/DomaineProfessionnel"
+            }
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du grand domaine.",
+            "example": "Industrie"
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          }
+        },
+        "description": "Grand Domaine"
+      },
+      "LiaisonEntreMetierEtCentreInteret": {
+        "type": "object",
+        "properties": {
+          "centreInteret": {
+            "$ref": "#/components/schemas/CentreInteret"
+          },
+          "metier": {
+            "$ref": "#/components/schemas/Metier"
+          },
+          "principal": {
+            "type": "boolean",
+            "description": "Principal: oui/non."
+          }
+        },
+        "description": "Liaison entre un métier et un centre d'intérêt"
+      },
+      "LiaisonEntreMetierEtSecteurActivite": {
+        "type": "object",
+        "properties": {
+          "metier": {
+            "$ref": "#/components/schemas/Metier"
+          },
+          "principal": {
+            "type": "boolean",
+            "description": "Principal: oui/non."
+          },
+          "secteurActivite": {
+            "$ref": "#/components/schemas/SecteurActivite"
+          }
+        },
+        "description": "Liaison entre un métier et un secteur d'activité"
+      },
+      "MacroSavoirEtreProfessionnel": {
+        "type": "object",
+        "description": "Macro savoir-être professionnel (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "riasecMajeur": {
+                "type": "string",
+                "description": "Riasec Majeur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "riasecMineur": {
+                "type": "string",
+                "description": "Riasec Mineur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'MACRO-SAVOIR-ETRE-PROFESSIONNEL'."
+              }
+            }
+          }
+        ]
+      },
+      "MacroSavoirFaire": {
+        "type": "object",
+        "description": "Macro savoir-faire (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "riasecMajeur": {
+                "type": "string",
+                "description": "Riasec Majeur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "riasecMineur": {
+                "type": "string",
+                "description": "Riasec Mineur. Ce champ est optionnel.",
+                "enum": [
+                  "R",
+                  "I",
+                  "A",
+                  "S",
+                  "E",
+                  "C"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'MACRO-SAVOIR-FAIRE'."
+              }
+            }
+          }
+        ]
+      },
+      "Metier": {
+        "type": "object",
+        "properties": {
+          "accesEmploi": {
+            "type": "string",
+            "description": "Acces emploi.",
+            "example": "Ce métier est accessible avec un CAP/BEP Agricole en travaux forestiers et bûcheronnage."
+          },
+          "appellations": {
+            "type": "array",
+            "description": "Liste des appellations rattachées.",
+            "items": {
+              "$ref": "#/components/schemas/Appellation"
+            }
+          },
+          "appellationsEnvisageables": {
+            "type": "array",
+            "description": "Liste des appellations envisageable. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Appellation"
+            }
+          },
+          "appellationsProches": {
+            "type": "array",
+            "description": "Liste des appellations proches. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Appellation"
+            }
+          },
+          "centresInterets": {
+            "type": "array",
+            "description": "Liste des centres d'intérêts liés. Cet attribut est déprécié, utiliser l'attribut centresInteretsLies",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/CentreInteret"
+            }
+          },
+          "centresInteretsLies": {
+            "type": "array",
+            "description": "Liste des centres d'intérêts liés.",
+            "items": {
+              "$ref": "#/components/schemas/LiaisonEntreMetierEtCentreInteret"
+            }
+          },
+          "code": {
+            "type": "string",
+            "description": "Code unique du métier.",
+            "example": "A1201"
+          },
+          "codeIsco": {
+            "type": "string",
+            "description": "Code ISCO (International Standard Classification of Occupations ou CITP en français). Ce champ est optionnel.",
+            "example": "6210"
+          },
+          "competencesMobilisees": {
+            "type": "array",
+            "description": "Liste des compétences mobilisées ni principales ni emergentes.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CompetenceDetaillee"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirEtreProfessionnel"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirFaire"
+                },
+                {
+                  "$ref": "#/components/schemas/Savoir"
+                }
+              ]
+            }
+          },
+          "competencesMobiliseesEmergentes": {
+            "type": "array",
+            "description": "Liste des compétences mobilisées.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CompetenceDetaillee"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirEtreProfessionnel"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirFaire"
+                },
+                {
+                  "$ref": "#/components/schemas/Savoir"
+                }
+              ]
+            }
+          },
+          "competencesMobiliseesPrincipales": {
+            "type": "array",
+            "description": "Liste des compétences mobilisées.",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/CompetenceDetaillee"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirEtreProfessionnel"
+                },
+                {
+                  "$ref": "#/components/schemas/MacroSavoirFaire"
+                },
+                {
+                  "$ref": "#/components/schemas/Savoir"
+                }
+              ]
+            }
+          },
+          "contextesTravail": {
+            "type": "array",
+            "description": "Liste des contextes de travail liés.",
+            "items": {
+              "$ref": "#/components/schemas/ContexteTravail"
+            }
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "definition": {
+            "type": "string",
+            "description": "Définition.",
+            "example": "Réalise des opérations de coupe et d'entretien d'arbres"
+          },
+          "divisionsNaf": {
+            "type": "array",
+            "description": "Liste des divisions NAF liées.",
+            "items": {
+              "$ref": "#/components/schemas/DivisionNaf"
+            }
+          },
+          "domaineProfessionnel": {
+            "$ref": "#/components/schemas/DomaineProfessionnel"
+          },
+          "emploiCadre": {
+            "type": "boolean",
+            "description": "Emploi cadre: oui/non. Ce champ est optionnel."
+          },
+          "emploiReglemente": {
+            "type": "boolean",
+            "description": "Emploi réglementé: oui/non. Ce champ est optionnel."
+          },
+          "formacodes": {
+            "type": "array",
+            "description": "Liste des formacodes liés.",
+            "items": {
+              "$ref": "#/components/schemas/Formacode"
+            }
+          },
+          "label": {
+            "type": "string",
+            "description": "Label (code métier d'origine). Cette valeur est utilisée dans le cas où un métier a été divisé en plusieurs métiers. Ce champ est optionnel.",
+            "example": "A1201"
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du métier.",
+            "example": "Bûcheronnage et élagage"
+          },
+          "metiersEnProximite": {
+            "type": "array",
+            "description": "Liste des métiers en proximité.",
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "metiersEnvisageables": {
+            "type": "array",
+            "description": "Liste des métiers envisageables. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "metiersProches": {
+            "type": "array",
+            "description": "Liste des métiers proches. Cette mobilité est obsolète mais conservée pour compatibilité ascendante.",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          },
+          "riasecMajeur": {
+            "type": "string",
+            "description": "Riasec Majeur. Ce champ est optionnel.",
+            "enum": [
+              "R",
+              "I",
+              "A",
+              "S",
+              "E",
+              "C"
+            ]
+          },
+          "riasecMineur": {
+            "type": "string",
+            "description": "Riasec Mineur. Ce champ est optionnel.",
+            "enum": [
+              "R",
+              "I",
+              "A",
+              "S",
+              "E",
+              "C"
+            ]
+          },
+          "secteursActivites": {
+            "type": "array",
+            "description": "Liste des secteurs d'activites liés. Cet attribut est déprécié, utiliser l'attribut secteursActivitesLies",
+            "deprecated": true,
+            "items": {
+              "$ref": "#/components/schemas/SecteurActivite"
+            }
+          },
+          "secteursActivitesLies": {
+            "type": "array",
+            "description": "Liste des centres d'intérêts liés.",
+            "items": {
+              "$ref": "#/components/schemas/LiaisonEntreMetierEtSecteurActivite"
+            }
+          },
+          "themes": {
+            "type": "array",
+            "description": "Liste des thèmes liés.",
+            "items": {
+              "$ref": "#/components/schemas/Theme"
+            }
+          },
+          "transitionDemographique": {
+            "type": "boolean",
+            "description": "Transition démographique: oui/non. Ce champ est optionnel."
+          },
+          "transitionEcologique": {
+            "type": "boolean",
+            "description": "Transition écologique: oui/non. Ce champ est optionnel."
+          },
+          "transitionEcologiqueDetaillee": {
+            "type": "string",
+            "description": "Transition écologique détaillée. Ce champ est optionnel.",
+            "enum": [
+              "EMPLOI_STRATEGIQUE",
+              "EMPLOI_VERT",
+              "EMPLOI_BLANC",
+              "EMPLOI_BRUN"
+            ]
+          },
+          "transitionNumerique": {
+            "type": "boolean",
+            "description": "Transition numérique: oui/non. Ce champ est optionnel."
+          }
+        },
+        "description": "Métier"
+      },
+      "Savoir": {
+        "type": "object",
+        "description": "Savoir (en provenance du référentiel 'Compétences').",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Competence"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Cette propriété est forcément à la valeur 'SAVOIR'."
+              }
+            }
+          }
+        ]
+      },
+      "SecteurActivite": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du secteur d'activité.",
+            "example": "79"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "definition": {
+            "type": "string",
+            "description": "Définition du secteur d'activité. Ce champ est optionnel."
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du secteur d'activité.",
+            "example": "Agriculture et élevage"
+          },
+          "metiersLies": {
+            "type": "array",
+            "description": "Liste des métiers liés.",
+            "items": {
+              "$ref": "#/components/schemas/LiaisonEntreMetierEtSecteurActivite"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          },
+          "secteurActivite": {
+            "$ref": "#/components/schemas/SecteurActivite"
+          },
+          "sousSecteurs": {
+            "type": "array",
+            "description": "Sous-secteur d'activités rattachés.",
+            "items": {
+              "$ref": "#/components/schemas/SecteurActivite"
+            }
+          }
+        },
+        "description": "Secteur d'activités. Il y a seulement deux niveaux de secteur d'activités: l'un qui dispose de sous-secteurs d'activités et l'autre qui dispose d'un secteur d'activité parent et de métiers rattachés."
+      },
+      "Theme": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Code unique du thème.",
+            "example": "12"
+          },
+          "dateFin": {
+            "type": "string",
+            "description": "date de fin de validité (renseignée si l'entité est obsolete)",
+            "format": "date-time"
+          },
+          "definition": {
+            "type": "string",
+            "description": "Définition du thème. Ce champs est optionnel.",
+            "example": "Métiers liés à l'éducation, l'enseignement, l'animation, aux loisirs et aux soins des enfants "
+          },
+          "libelle": {
+            "type": "string",
+            "description": "Libellé du thème.",
+            "example": "Métiers auprès des enfants"
+          },
+          "metiers": {
+            "type": "array",
+            "description": "Métiers rattachés.",
+            "items": {
+              "$ref": "#/components/schemas/Metier"
+            }
+          },
+          "obsolete": {
+            "type": "boolean",
+            "description": "boolean définissant si l'entité est obsolete"
+          }
+        },
+        "description": "Thème"
+      },
+      "VersionRome": {
+        "title": "VersionRome",
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "La version actuelle."
+          },
+          "lastModifiedDate": {
+            "type": "string",
+            "description": "La date de dernière modification de la version.",
+            "format": "date-time"
+          }
+        },
+        "description": "Version du rome"
+      }
+    },
+    "securitySchemes": {
+      "authentification_partenaire": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://entreprise.francetravail.fr/connexion/oauth2/access_token?realm=/partenaire",
+            "scopes": {
+              "nomenclatureRome": "Obligatoire",
+              "api_rome-metiersv1": "Obligatoire"
+            }
+          }
+        }
+      }
+    }
+  }
+}
