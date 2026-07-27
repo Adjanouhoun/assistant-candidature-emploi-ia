@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from urllib.parse import urlparse
 
 from candidature_emploi.domain.offers import (
@@ -14,6 +14,7 @@ from candidature_emploi.domain.offers import (
     JobSkill,
     SearchCriteria,
     SearchResult,
+    Region,
 )
 from candidature_emploi.infrastructure.france_travail.config import OFFERS_BASE_URL
 from candidature_emploi.infrastructure.france_travail.errors import (
@@ -126,6 +127,75 @@ class FranceTravailOffersConnector:
             for item in payload
             if isinstance(item, dict) and item.get("code") and item.get("libelle")
         ]
+
+    def list_regions(self) -> list[Region]:
+        response = self._api.get(f"{self._base_url}/v2/referentiel/regions")
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            raise ProviderResponseError("Référentiel régions invalide.") from exc
+        if not isinstance(payload, list):
+            raise ProviderResponseError("Référentiel régions invalide.")
+        return [
+            Region(code=_text(item.get("code")), label=_text(item.get("libelle")))
+            for item in payload
+            if isinstance(item, dict) and item.get("code") and item.get("libelle")
+        ]
+
+    def count_region_segment(
+        self,
+        region_code: str,
+        start: datetime,
+        end: datetime,
+    ) -> int:
+        response = self._api.get(
+            f"{self._base_url}/v2/offres/search",
+            params={
+                "region": region_code,
+                "minCreationDate": _api_datetime(start),
+                "maxCreationDate": _api_datetime(end),
+                "range": "0-0",
+            },
+        )
+        if response.status_code == 204:
+            return 0
+        total = _parse_total(response.headers.get("Content-Range"))
+        if total is None:
+            raise ProviderResponseError("Total de pagination national absent.")
+        return total
+
+    def fetch_region_segment(
+        self,
+        region_code: str,
+        start: datetime,
+        end: datetime,
+        total: int,
+    ) -> list[JobOffer]:
+        offers: list[JobOffer] = []
+        for index in range(0, total, 150):
+            response = self._api.get(
+                f"{self._base_url}/v2/offres/search",
+                params={
+                    "region": region_code,
+                    "minCreationDate": _api_datetime(start),
+                    "maxCreationDate": _api_datetime(end),
+                    "range": f"{index}-{min(index + 149, total - 1)}",
+                },
+            )
+            if response.status_code == 204:
+                continue
+            payload = _json_object(response)
+            raw_offers = payload.get("resultats", [])
+            if not isinstance(raw_offers, list):
+                raise ProviderResponseError("Liste d'offres nationale invalide.")
+            for item in raw_offers:
+                try:
+                    offers.append(normalize_offer(item))
+                except ProviderResponseError:
+                    # Une offre incomplète ne doit pas interrompre la synchronisation
+                    # nationale : les autres offres du même lot restent exploitables.
+                    continue
+        return offers
 
 
 def find_communes(query: str, communes: list[Commune]) -> list[Commune]:
@@ -302,3 +372,7 @@ def _datetime(value: object) -> datetime | None:
         return datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
         return None
+
+
+def _api_datetime(value: datetime) -> str:
+    return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")

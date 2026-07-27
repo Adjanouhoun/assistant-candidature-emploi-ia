@@ -1,0 +1,8 @@
+FROM apache/airflow:3.3.0-python3.12
+
+WORKDIR /opt/assistant
+COPY pyproject.toml README.md ./
+COPY src ./src
+USER airflow
+RUN pip install --no-cache-dir --no-deps . && \
+    pip install --no-cache-dir "httpx>=0.28" "pydantic>=2.7" "python-dotenv>=1.0" "psycopg[binary]>=3.2" "SQLAlchemy>=2.0"
