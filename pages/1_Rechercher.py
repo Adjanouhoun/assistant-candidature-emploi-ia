@@ -20,6 +20,7 @@ from candidature_emploi.application.job_search import (
     get_cached_rome_enrichment,
 )
 from candidature_emploi.application.compatibility import score_offer
+from candidature_emploi.application.application_drafts import generate_drafts
 from candidature_emploi.domain.models import CandidateProfile
 from candidature_emploi.domain.offers import Commune, JobOffer, SearchCriteria
 from candidature_emploi.infrastructure.france_travail.errors import ProviderError
@@ -240,6 +241,15 @@ def render_offer(offer: JobOffer) -> None:
                         st.write(f"**{contribution.label}** — neutre : {contribution.detail}")
                     else:
                         st.write(f"**{contribution.label}** ({contribution.weight} %) — {round(contribution.score * 100)} % : {contribution.detail}")
+            if st.button("Générer un brouillon", key=f"draft_{offer.external_id}"):
+                try:
+                    st.session_state.setdefault("drafts", {})[offer.external_id] = generate_drafts(profile, offer, score, PROJECT_ROOT / ".env")
+                except ProviderError as exc:
+                    st.warning(exc.user_message)
+            draft = st.session_state.get("drafts", {}).get(offer.external_id)
+            if draft:
+                st.caption("Brouillon Gemini modifiable — aucune candidature n’est envoyée.")
+                st.text_area("Lettre et email", draft, key=f"draft_text_{offer.external_id}", height=320)
         if offer.salary_label:
             st.write(f"**Salaire publié :** {offer.salary_label}")
         if st.button("Voir le détail", key=f"detail_{offer.external_id}"):
