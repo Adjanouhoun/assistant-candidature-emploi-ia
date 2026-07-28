@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from typing import TypeVar
 from uuid import uuid4
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.engine import Engine
@@ -58,10 +59,23 @@ class OfferRepository:
 
     def start_run(self, provider: str, segments_expected: int = 0) -> str:
         with Session(self._engine) as session:
+            now = _now()
+            session.execute(
+                update(SyncRunRecord)
+                .where(
+                    SyncRunRecord.provider == provider,
+                    SyncRunRecord.status == "running",
+                )
+                .values(
+                    status="failed",
+                    completed_at=now,
+                    error_summary="Synchronisation précédente interrompue.",
+                )
+            )
             run = SyncRunRecord(
                 provider=provider,
                 status="running",
-                started_at=_now(),
+                started_at=now,
                 segments_expected=segments_expected,
             )
             session.add(run)
@@ -282,5 +296,6 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
-def _batches(values: list[BatchItem], size: int) -> list[list[BatchItem]]:
-    return [values[index : index + size] for index in range(0, len(values), size)]
+def _batches(values: list[BatchItem], size: int) -> Iterator[list[BatchItem]]:
+    for index in range(0, len(values), size):
+        yield values[index : index + size]

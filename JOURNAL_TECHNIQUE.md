@@ -297,10 +297,13 @@ l'insertion de l'export complet dans une seule requête dépassait la limite de
    transaction, sans modifier la déduplication ni la suppression sécurisée en
    fin de cycle.
 3. Un test couvre l'écriture d'un lot supérieur à la taille configurée.
+4. Le démarrage d'un nouveau cycle clôture comme interrompu tout ancien cycle
+   du même fournisseur resté artificiellement en cours après l'arrêt d'un
+   worker Airflow.
 
 ### Vérification
 
-- 57 tests automatisés réussis ;
+- 58 tests automatisés réussis ;
 - le correctif est compatible Python 3.11 et supérieur ;
 - la relance LBA reste à effectuer après déploiement de cette seconde
   correction de persistance.
