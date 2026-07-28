@@ -277,3 +277,30 @@ visuelle et d'un essai réel explicitement confirmé par l'utilisateur.
 - consentement requis par l'interface avant toute transmission ;
 - aucune persistance du texte, du CV ou du profil dans PostgreSQL ou les
   journaux techniques.
+
+## Exploitation — Correctif La Bonne Alternance
+
+### Constat
+
+Le premier import national de l'export LBA a confirmé le format réel de la
+source : le document téléchargé est un tableau JSON brut servi en
+`application/octet-stream`. Après prise en charge de ce format, l'import a
+atteint la persistance PostgreSQL et a révélé un second problème de volumétrie :
+l'insertion de l'export complet dans une seule requête dépassait la limite de
+65 535 paramètres du pilote PostgreSQL.
+
+### Correctif
+
+1. Le connecteur accepte désormais un tableau JSON brut ou une réponse
+   `{\"jobs\": [...]}` selon l'endpoint.
+2. La persistance effectue les upserts par lots de 500 offres, dans une unique
+   transaction, sans modifier la déduplication ni la suppression sécurisée en
+   fin de cycle.
+3. Un test couvre l'écriture d'un lot supérieur à la taille configurée.
+
+### Vérification
+
+- 57 tests automatisés réussis ;
+- le correctif est compatible Python 3.11 et supérieur ;
+- la relance LBA reste à effectuer après déploiement de cette seconde
+  correction de persistance.

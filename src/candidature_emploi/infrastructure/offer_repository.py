@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import TypeVar
 from uuid import uuid4
 
 from sqlalchemy import delete, func, select
@@ -19,6 +20,13 @@ from candidature_emploi.infrastructure.database import (
     SourceSettingRecord,
     SyncRunRecord,
 )
+
+
+# Une ligne d'offre utilise douze paramètres SQL. Cette taille maintient les
+# insertions PostgreSQL très en dessous de la limite de 65 535 paramètres, même
+# pour l'export national complet de La Bonne Alternance.
+UPSERT_BATCH_SIZE = 500
+BatchItem = TypeVar("BatchItem")
 
 
 class ApplicationEvent:
@@ -64,7 +72,7 @@ class OfferRepository:
         self.record_offers(run_id, [offer])
 
     def record_offers(self, run_id: str, offers: list[JobOffer]) -> None:
-        """Enregistre une page entière en une transaction et sans doublon."""
+        """Enregistre les offres par lots, en une transaction et sans doublon."""
 
         if not offers:
             return
@@ -92,27 +100,29 @@ class OfferRepository:
                 if self._engine.dialect.name == "postgresql"
                 else sqlite_insert
             )
-            statement = insert(JobOfferRecord).values(list(rows.values()))
-            changes = {
-                "title": statement.excluded.title,
-                "location_label": statement.excluded.location_label,
-                "contract_type": statement.excluded.contract_type,
-                "is_alternance": statement.excluded.is_alternance,
-                "payload": statement.excluded.payload,
-                "source_reference": statement.excluded.source_reference,
-                "last_seen_at": statement.excluded.last_seen_at,
-                "last_seen_run_id": statement.excluded.last_seen_run_id,
-            }
-            if self._engine.dialect.name == "postgresql":
-                statement = statement.on_conflict_do_update(
-                    constraint="uq_job_offers_provider_external_id", set_=changes
-                )
-            else:
-                statement = statement.on_conflict_do_update(
-                    index_elements=[JobOfferRecord.provider, JobOfferRecord.external_id],
-                    set_=changes,
-                )
-            session.execute(statement)
+            values = list(rows.values())
+            for batch in _batches(values, UPSERT_BATCH_SIZE):
+                statement = insert(JobOfferRecord).values(batch)
+                changes = {
+                    "title": statement.excluded.title,
+                    "location_label": statement.excluded.location_label,
+                    "contract_type": statement.excluded.contract_type,
+                    "is_alternance": statement.excluded.is_alternance,
+                    "payload": statement.excluded.payload,
+                    "source_reference": statement.excluded.source_reference,
+                    "last_seen_at": statement.excluded.last_seen_at,
+                    "last_seen_run_id": statement.excluded.last_seen_run_id,
+                }
+                if self._engine.dialect.name == "postgresql":
+                    statement = statement.on_conflict_do_update(
+                        constraint="uq_job_offers_provider_external_id", set_=changes
+                    )
+                else:
+                    statement = statement.on_conflict_do_update(
+                        index_elements=[JobOfferRecord.provider, JobOfferRecord.external_id],
+                        set_=changes,
+                    )
+                session.execute(statement)
             session.commit()
 
     def complete_run(self, run_id: str, segments_completed: int) -> int:
@@ -270,3 +280,7 @@ class OfferRepository:
 
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _batches(values: list[BatchItem], size: int) -> list[list[BatchItem]]:
+    return [values[index : index + size] for index in range(0, len(values), size)]

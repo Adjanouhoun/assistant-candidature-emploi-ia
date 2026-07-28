@@ -51,6 +51,20 @@ def test_upsert_preserves_a_single_offer_per_provider_and_external_id() -> None:
     assert repository.last_successful_sync("france_travail") is not None
 
 
+def test_large_offer_import_is_written_in_bounded_batches() -> None:
+    engine = create_engine("sqlite://").execution_options(
+        schema_translate_map={"app": None}
+    )
+    Base.metadata.create_all(engine)
+    repository = OfferRepository(engine)
+    run_id = repository.start_run("la_bonne_alternance", segments_expected=1)
+
+    repository.record_offers(run_id, [_offer(str(index)) for index in range(1001)])
+    repository.complete_run(run_id, segments_completed=1)
+
+    assert _offer_count(engine) == 1001
+
+
 def test_application_history_contains_only_operational_metadata() -> None:
     engine = create_engine("sqlite://").execution_options(
         schema_translate_map={"app": None}
