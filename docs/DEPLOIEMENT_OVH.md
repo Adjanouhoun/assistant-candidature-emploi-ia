@@ -2,10 +2,10 @@
 
 ## Périmètre de la première mise en ligne
 
-Le POC sera exposé en HTTPS derrière le Nginx déjà présent sur la VM, avec une
-authentification HTTP basique. PostgreSQL et Airflow ne sont pas publics. Cette protection est
-obligatoire : l'application traite temporairement des CV et consomme des clés
-API dont le quota ne doit pas être ouvert à tous les visiteurs.
+Le POC sera exposé publiquement en HTTPS derrière le Nginx déjà présent sur la
+VM. PostgreSQL et Airflow ne sont pas publics. Les CV sont utilisés
+temporairement, ne sont pas persistés et l'envoi à Gemini reste soumis au
+consentement explicite de l'utilisateur. Le quota Gemini doit être surveillé.
 
 ## Préconditions à confirmer
 
@@ -40,12 +40,7 @@ AIRFLOW_PARALLELISM=2
 AIRFLOW_MAX_ACTIVE_TASKS_PER_DAG=1
 ```
 
-Ne pas inscrire de valeur réelle dans le dépôt. Créer le compte d'accès Nginx
-sur la VM, sans recopier le mot de passe dans l'historique :
-
-```bash
-sudo htpasswd -c /etc/nginx/.htpasswd-assistant-candidature <identifiant>
-```
+Ne pas inscrire de valeur réelle dans le dépôt.
 
 ## Procédure contrôlée
 
