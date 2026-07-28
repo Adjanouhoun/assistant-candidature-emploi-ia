@@ -64,6 +64,7 @@ class JobOffer(BaseModel):
     apply_url: str | None = None
     origin_url: str | None = None
     application_capability: ApplicationCapability = ApplicationCapability.UNAVAILABLE
+    application_recipient_id: str | None = None
     source_reference: str
 
     @field_validator("apply_url", "origin_url")

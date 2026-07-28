@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
+from typing import TypeVar
 from uuid import uuid4
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.engine import Engine
@@ -13,7 +15,40 @@ from sqlalchemy.orm import Session
 
 from candidature_emploi.domain.offers import JobOffer
 from candidature_emploi.domain.offers import SearchCriteria, SearchResult
-from candidature_emploi.infrastructure.database import JobOfferRecord, SourceSettingRecord, SyncRunRecord
+from candidature_emploi.infrastructure.database import (
+    ApplicationEventRecord,
+    JobOfferRecord,
+    SourceSettingRecord,
+    SyncRunRecord,
+)
+
+
+# Une ligne d'offre utilise douze paramètres SQL. Cette taille maintient les
+# insertions PostgreSQL très en dessous de la limite de 65 535 paramètres, même
+# pour l'export national complet de La Bonne Alternance.
+UPSERT_BATCH_SIZE = 500
+BatchItem = TypeVar("BatchItem")
+
+
+class ApplicationEvent:
+    """Métadonnées consultables d'une tentative de candidature."""
+
+    def __init__(
+        self,
+        *,
+        id: str,
+        provider: str,
+        offer_external_id: str,
+        status: str,
+        occurred_at: datetime,
+        transmission_id: str | None,
+    ) -> None:
+        self.id = id
+        self.provider = provider
+        self.offer_external_id = offer_external_id
+        self.status = status
+        self.occurred_at = occurred_at
+        self.transmission_id = transmission_id
 
 
 class OfferRepository:
@@ -24,10 +59,23 @@ class OfferRepository:
 
     def start_run(self, provider: str, segments_expected: int = 0) -> str:
         with Session(self._engine) as session:
+            now = _now()
+            session.execute(
+                update(SyncRunRecord)
+                .where(
+                    SyncRunRecord.provider == provider,
+                    SyncRunRecord.status == "running",
+                )
+                .values(
+                    status="failed",
+                    completed_at=now,
+                    error_summary="Synchronisation précédente interrompue.",
+                )
+            )
             run = SyncRunRecord(
                 provider=provider,
                 status="running",
-                started_at=_now(),
+                started_at=now,
                 segments_expected=segments_expected,
             )
             session.add(run)
@@ -38,7 +86,7 @@ class OfferRepository:
         self.record_offers(run_id, [offer])
 
     def record_offers(self, run_id: str, offers: list[JobOffer]) -> None:
-        """Enregistre une page entière en une transaction et sans doublon."""
+        """Enregistre les offres par lots, en une transaction et sans doublon."""
 
         if not offers:
             return
@@ -66,27 +114,29 @@ class OfferRepository:
                 if self._engine.dialect.name == "postgresql"
                 else sqlite_insert
             )
-            statement = insert(JobOfferRecord).values(list(rows.values()))
-            changes = {
-                "title": statement.excluded.title,
-                "location_label": statement.excluded.location_label,
-                "contract_type": statement.excluded.contract_type,
-                "is_alternance": statement.excluded.is_alternance,
-                "payload": statement.excluded.payload,
-                "source_reference": statement.excluded.source_reference,
-                "last_seen_at": statement.excluded.last_seen_at,
-                "last_seen_run_id": statement.excluded.last_seen_run_id,
-            }
-            if self._engine.dialect.name == "postgresql":
-                statement = statement.on_conflict_do_update(
-                    constraint="uq_job_offers_provider_external_id", set_=changes
-                )
-            else:
-                statement = statement.on_conflict_do_update(
-                    index_elements=[JobOfferRecord.provider, JobOfferRecord.external_id],
-                    set_=changes,
-                )
-            session.execute(statement)
+            values = list(rows.values())
+            for batch in _batches(values, UPSERT_BATCH_SIZE):
+                statement = insert(JobOfferRecord).values(batch)
+                changes = {
+                    "title": statement.excluded.title,
+                    "location_label": statement.excluded.location_label,
+                    "contract_type": statement.excluded.contract_type,
+                    "is_alternance": statement.excluded.is_alternance,
+                    "payload": statement.excluded.payload,
+                    "source_reference": statement.excluded.source_reference,
+                    "last_seen_at": statement.excluded.last_seen_at,
+                    "last_seen_run_id": statement.excluded.last_seen_run_id,
+                }
+                if self._engine.dialect.name == "postgresql":
+                    statement = statement.on_conflict_do_update(
+                        constraint="uq_job_offers_provider_external_id", set_=changes
+                    )
+                else:
+                    statement = statement.on_conflict_do_update(
+                        index_elements=[JobOfferRecord.provider, JobOfferRecord.external_id],
+                        set_=changes,
+                    )
+                session.execute(statement)
             session.commit()
 
     def complete_run(self, run_id: str, segments_completed: int) -> int:
@@ -182,6 +232,51 @@ class OfferRepository:
                 row.is_visible, row.updated_at = is_visible, _now()
             session.commit()
 
+    def record_application_event(
+        self,
+        *,
+        provider: str,
+        offer_external_id: str,
+        status: str,
+        transmission_id: str | None = None,
+        error_summary: str | None = None,
+    ) -> str:
+        """Conserve seulement la trace opérationnelle autorisée de l'action."""
+
+        event = ApplicationEventRecord(
+            provider=provider,
+            offer_external_id=offer_external_id,
+            status=status,
+            occurred_at=_now(),
+            transmission_id=transmission_id,
+            error_summary=error_summary,
+        )
+        with Session(self._engine) as session:
+            session.add(event)
+            session.commit()
+            return event.id
+
+    def application_events(self, limit: int = 50) -> list[ApplicationEvent]:
+        """Retourne le journal sans exposer de contenu de candidature."""
+
+        with Session(self._engine) as session:
+            records = session.scalars(
+                select(ApplicationEventRecord)
+                .order_by(ApplicationEventRecord.occurred_at.desc())
+                .limit(limit)
+            ).all()
+        return [
+            ApplicationEvent(
+                id=record.id,
+                provider=record.provider,
+                offer_external_id=record.offer_external_id,
+                status=record.status,
+                occurred_at=record.occurred_at,
+                transmission_id=record.transmission_id,
+            )
+            for record in records
+        ]
+
     def purge_run_logs(self, retention_days: int = 30) -> int:
         limit = _now() - timedelta(days=retention_days)
         with Session(self._engine) as session:
@@ -199,3 +294,8 @@ class OfferRepository:
 
 def _now() -> datetime:
     return datetime.now(UTC)
+
+
+def _batches(values: list[BatchItem], size: int) -> Iterator[list[BatchItem]]:
+    for index in range(0, len(values), size):
+        yield values[index : index + size]

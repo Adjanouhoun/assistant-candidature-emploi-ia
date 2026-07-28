@@ -35,11 +35,16 @@ ROME suit un contrat distinct d’enrichissement, car il ne fournit pas d’offr
 | `skills` | non | Compétences explicites ou enrichies |
 | `published_at` | non | Date de publication |
 | `apply_url` | non | Canal officiel de candidature |
-| `application_capability` | oui | redirection, API, indisponible |
+| `application_capability` | oui | redirection ou indisponible |
+| `application_recipient_id` | non | Destinataire API publié par la source, jamais inventé |
 | `raw_reference` | oui | Référence traçable, sans dupliquer inutilement les données |
 
 Une offre dépourvue de canal de candidature peut être affichée, mais le système
 ne doit pas inventer de moyen de contact.
+
+Un connecteur peut proposer une transmission seulement si son contrat officiel
+documente le destinataire, les champs requis et une réponse de succès. Une
+confirmation humaine contextuelle reste obligatoire avant l'appel réel.
 
 ## 4. Registre de configuration
 
@@ -80,4 +85,3 @@ Toute implémentation devra réussir les mêmes tests :
 - gestion des erreurs et délais ;
 - absence de secret dans les journaux ;
 - activation et désactivation effectives.
-

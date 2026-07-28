@@ -26,7 +26,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "127.0.0.1:8501:8501"
+      - "127.0.0.1:${STREAMLIT_HOST_PORT:-8501}:8501"
 
   airflow-init:
     build:
@@ -36,6 +36,9 @@ services:
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg://app:${POSTGRES_PASSWORD}@postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      # La VM héberge déjà un second Airflow : une tâche globale, une tâche par DAG.
+      AIRFLOW__CORE__PARALLELISM: ${AIRFLOW_PARALLELISM:-2}
+      AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: ${AIRFLOW_MAX_ACTIVE_TASKS_PER_DAG:-1}
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api-server:8080/execution/
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__API__AUTH_BACKENDS: airflow.providers.fab.auth_manager.api.auth.backend.session
@@ -62,6 +65,9 @@ services:
     environment: &airflow_environment
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg://app:${POSTGRES_PASSWORD}@postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      # La VM héberge déjà un second Airflow : une tâche globale, une tâche par DAG.
+      AIRFLOW__CORE__PARALLELISM: ${AIRFLOW_PARALLELISM:-2}
+      AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: ${AIRFLOW_MAX_ACTIVE_TASKS_PER_DAG:-1}
       AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api-server:8080/execution/
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
       AIRFLOW__API__AUTH_BACKENDS: airflow.providers.fab.auth_manager.api.auth.backend.session

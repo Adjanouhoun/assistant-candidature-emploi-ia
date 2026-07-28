@@ -185,3 +185,127 @@ Validé localement le 27 juillet 2026.
 - les offres fournisseur incomplètes sont ignorées au niveau de leur lot ;
 - 33 tests automatisés réussis ;
 - le planificateur Airflow est actif, avec le prochain créneau à 18:00 UTC.
+
+## Sprint 7 — Parcours de candidature sécurisé
+
+### État
+
+Implémentation locale terminée ; clôture après migration Docker et démonstration
+fonctionnelle contrôlée.
+
+### Décisions enregistrées
+
+1. La Bonne Alternance est le seul connecteur actuellement autorisé à transmettre
+   une candidature par API, lorsque l’offre publie un destinataire API.
+2. La confirmation est une action explicite, jamais présélectionnée.
+3. Prénom, nom, email et téléphone sont revus dans le formulaire de confirmation
+   et restent en session.
+4. Le CV, la lettre et les coordonnées ne sont persistés ni dans PostgreSQL ni
+   dans le journal technique.
+5. L’historique conserve seulement les métadonnées autorisées de l’action.
+6. En l’absence de transmission API documentée, l’utilisateur est redirigé vers
+   le canal officiel de l’offre.
+
+### Vérification locale
+
+- 39 tests automatisés réussis ;
+- appel LBA simulé avec encodage du CV contrôlé ;
+- refus de quota simulé sans répétition automatique ;
+- journal de métadonnées testé sur base SQLite.
+
+## Sprint 8 — Qualité du profil candidat et OCR local
+
+### État
+
+Implémenté et vérifié localement le 27 juillet 2026 ; en attente de validation
+visuelle du parcours Streamlit avant clôture.
+
+### Décisions enregistrées
+
+1. Tesseract est exécuté localement dans le conteneur Streamlit, en mémoire,
+   seulement lorsque le texte PDF exploitable est insuffisant.
+2. Aucune API OCR externe ne reçoit un CV.
+3. Le contrôle ATS est local, déterministe, détaillé dans l'interface et ne
+   prétend pas reproduire le fonctionnement d'un ATS propriétaire.
+4. Le candidat conserve toujours la possibilité de corriger le profil extrait.
+5. Les CV réels de validation ne sont ni versionnés ni intégrés à l'image
+   Docker.
+6. Chaque flux page-colonne est analysé séparément et conserve ses coordonnées.
+7. Un bloc ambigu n'est jamais déplacé automatiquement vers une autre rubrique ;
+   il est présenté dans « Informations à vérifier ».
+8. Les projets et POC disposent de leur propre rubrique.
+
+### Résultats de vérification
+
+- 51 tests automatisés réussis ;
+- langues Tesseract française et anglaise disponibles dans Docker ;
+- amélioration confirmée sur deux CV locaux : expériences, formation,
+  compétences et langues extraites ;
+- audit de lisibilité et de complétude local : 90/100 pour les deux documents.
+- détection des colonnes validée sur les alignements de départ des lignes ;
+- artefacts OCR de confiance nulle écartés ;
+- résultats du CV OCR : 4 compétences, 3 langues, 1 formation, 9 expériences ;
+- résultats du CV de deux pages : 40 compétences, 2 langues, 4 formations,
+  5 expériences et 1 portefeuille de projets ;
+- les blocs non rattachables restent visibles dans la zone de vérification.
+
+## Sprint 9 — Profil Gemini structuré avec preuves locales
+
+### État
+
+Implémenté et testé localement le 28 juillet 2026 ; en attente de validation
+visuelle et d'un essai réel explicitement confirmé par l'utilisateur.
+
+### Décisions enregistrées
+
+1. L'OCR et l'extraction de texte restent locaux.
+2. Gemini ne reçoit le texte du CV qu'après consentement explicite dans
+   Streamlit.
+3. La réponse Gemini est contrainte par un schéma JSON et toute information
+   proposée doit comporter un extrait exact du CV.
+4. Le code vérifie localement chaque extrait et écarte les données non prouvées.
+5. Gemini structure et explique ; le code calcule la compatibilité ; le candidat
+   valide le profil final.
+6. Le texte ne peut pas être tronqué silencieusement : au-delà de 30 000
+   caractères, l'analyse est refusée avec un message explicite.
+
+### Résultats
+
+- 55 tests automatisés réussis ;
+- contrat JSON Gemini couvert sans appel externe ni CV réel ;
+- rejet testé d'une compétence dont l'extrait est absent du CV ;
+- consentement requis par l'interface avant toute transmission ;
+- aucune persistance du texte, du CV ou du profil dans PostgreSQL ou les
+  journaux techniques.
+
+## Exploitation — Correctif La Bonne Alternance
+
+### Constat
+
+Le premier import national de l'export LBA a confirmé le format réel de la
+source : le document téléchargé est un tableau JSON brut servi en
+`application/octet-stream`. Après prise en charge de ce format, l'import a
+atteint la persistance PostgreSQL et a révélé un second problème de volumétrie :
+l'insertion de l'export complet dans une seule requête dépassait la limite de
+65 535 paramètres du pilote PostgreSQL.
+
+### Correctif
+
+1. Le connecteur accepte désormais un tableau JSON brut ou une réponse
+   `{\"jobs\": [...]}` selon l'endpoint.
+2. La persistance effectue les upserts par lots de 500 offres, dans une unique
+   transaction, sans modifier la déduplication ni la suppression sécurisée en
+   fin de cycle.
+3. Un test couvre l'écriture d'un lot supérieur à la taille configurée.
+4. Le démarrage d'un nouveau cycle clôture comme interrompu tout ancien cycle
+   du même fournisseur resté artificiellement en cours après l'arrêt d'un
+   worker Airflow.
+
+### Vérification
+
+- 58 tests automatisés réussis ;
+- le correctif est compatible Python 3.11 et supérieur ;
+- relance de production réussie le 28 juillet 2026 : 300 521 offres LBA
+  enregistrées, cycle validé `1/1` sans erreur ;
+- l'ancien cycle interrompu par le redémarrage Docker est correctement clôturé
+  avec le statut d'échec explicite prévu.
