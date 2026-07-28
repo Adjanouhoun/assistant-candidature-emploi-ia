@@ -305,5 +305,7 @@ l'insertion de l'export complet dans une seule requête dépassait la limite de
 
 - 58 tests automatisés réussis ;
 - le correctif est compatible Python 3.11 et supérieur ;
-- la relance LBA reste à effectuer après déploiement de cette seconde
-  correction de persistance.
+- relance de production réussie le 28 juillet 2026 : 300 521 offres LBA
+  enregistrées, cycle validé `1/1` sans erreur ;
+- l'ancien cycle interrompu par le redémarrage Docker est correctement clôturé
+  avec le statut d'échec explicite prévu.
