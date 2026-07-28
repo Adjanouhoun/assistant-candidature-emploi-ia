@@ -28,8 +28,10 @@ restent accessibles uniquement depuis la VM.
 - Airflow est limité à deux tâches globales et une tâche par DAG pour cohabiter
   avec `data-pipeline-mobility` sur le même VPS ;
 - le premier chargement national a été déclenché le 28 juillet 2026 ;
-- le connecteur LBA accepte l’export de production sous forme de tableau JSON
-  brut, y compris lorsque l’API le sert avec le type `binary/octet-stream`.
+- le correctif versionné du connecteur LBA accepte l’export de production sous
+  forme de tableau JSON brut, y compris lorsque l’API le sert avec le type
+  `binary/octet-stream` ; son déploiement attend la fin du premier chargement
+  national pour ne pas l’interrompre.
 
 ## Sources prévues pour le POC
 
