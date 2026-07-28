@@ -26,6 +26,25 @@ def test_export_excludes_france_travail_and_normalizes_lba() -> None:
     assert offers[0].is_alternance is True
 
 
+def test_export_accepts_the_production_json_array() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/export"):
+            return httpx.Response(200, json={"url": "https://export.test/jobs"})
+        return httpx.Response(
+            200,
+            content=json.dumps([_job("offres_emploi_lba", "lba-1")]),
+            headers={"content-type": "binary/octet-stream"},
+        )
+
+    connector = LaBonneAlternanceConnector(
+        httpx.Client(transport=httpx.MockTransport(handler)), "key", "https://api.test"
+    )
+
+    offers = connector.fetch_export()
+
+    assert [offer.external_id for offer in offers] == ["lba-1"]
+
+
 def test_submit_application_transmits_only_to_documented_lba_endpoint() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"

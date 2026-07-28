@@ -46,8 +46,10 @@ class LaBonneAlternanceConnector:
         url = _text(metadata.get("url"))
         if not url:
             raise ProviderResponseError("URL d'export La Bonne Alternance absente.")
-        payload = self._get_json(url, authenticated=False)
-        jobs = payload.get("jobs")
+        payload = self._get_payload(url, authenticated=False)
+        # L'export de production est un tableau JSON brut, servi avec le type
+        # binaire. Les recherches renvoient quant à elles {"jobs": [...]}.
+        jobs = payload if isinstance(payload, list) else payload.get("jobs") if isinstance(payload, dict) else None
         if not isinstance(jobs, list):
             raise ProviderResponseError("Export La Bonne Alternance invalide.")
         offers: list[JobOffer] = []
@@ -132,6 +134,12 @@ class LaBonneAlternanceConnector:
         return application_id
 
     def _get_json(self, url: str, *, authenticated: bool) -> dict[str, object]:
+        payload = self._get_payload(url, authenticated=authenticated)
+        if not isinstance(payload, dict):
+            raise ProviderResponseError("Réponse La Bonne Alternance invalide.")
+        return payload
+
+    def _get_payload(self, url: str, *, authenticated: bool) -> object:
         headers = {"Accept": "application/json"}
         if authenticated:
             headers["Authorization"] = f"Bearer {self._api_key}"
@@ -149,8 +157,6 @@ class LaBonneAlternanceConnector:
             payload = response.json()
         except ValueError as exc:
             raise ProviderResponseError("Réponse JSON La Bonne Alternance invalide.") from exc
-        if not isinstance(payload, dict):
-            raise ProviderResponseError("Réponse La Bonne Alternance invalide.")
         return payload
 
 
