@@ -5,7 +5,10 @@ d’alternance, explique la compatibilité et prépare une candidature personnal
 
 ## Statut
 
-Le projet est au **Sprint 9 — Profil structuré Gemini avec preuves**.
+Le projet a atteint le **Sprint 9 — Profil structuré Gemini avec preuves** et
+dispose d’une première mise en ligne publique sur
+[emploi.amadouadjanouhoun.fr](https://emploi.amadouadjanouhoun.fr).
+
 L’application extrait d'abord le CV localement, puis ne transmet son texte à
 Gemini qu'après confirmation explicite pour proposer un profil éditable. Chaque
 proposition est contrôlée par un extrait retrouvé dans le CV. Les offres sont
@@ -13,6 +16,20 @@ recherchées depuis PostgreSQL, le score reste déterministe et explicable, et l
 candidature est préparée avant redirection vers le canal officiel ou transmission
 La Bonne Alternance confirmée. Le CV, les coordonnées et le message ne sont
 jamais enregistrés dans l’historique de candidature.
+
+## Déploiement OVH
+
+Le POC est déployé en Docker Compose sur un VPS OVH Cloud. Nginx assure le
+HTTPS et le proxy inverse vers Streamlit ; PostgreSQL et les services Airflow
+restent accessibles uniquement depuis la VM.
+
+- France Travail : synchronisation nationale toutes les 6 heures ;
+- La Bonne Alternance : synchronisation quotidienne à 03:20 (Europe/Paris) ;
+- Airflow est limité à deux tâches globales et une tâche par DAG pour cohabiter
+  avec `data-pipeline-mobility` sur le même VPS ;
+- le premier chargement national a été déclenché le 28 juillet 2026 ;
+- le connecteur LBA accepte l’export de production sous forme de tableau JSON
+  brut, y compris lorsque l’API le sert avec le type `binary/octet-stream`.
 
 ## Sources prévues pour le POC
 
